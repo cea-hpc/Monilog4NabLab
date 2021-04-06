@@ -1,0 +1,13 @@
+# Java
+.class
+*.jar
+bin/
+# Eclipse
+.metadata
+.settings/
+# Xtext
+xtend-gen/
+# Maven
+target/
+# macOS
+.DS_Store

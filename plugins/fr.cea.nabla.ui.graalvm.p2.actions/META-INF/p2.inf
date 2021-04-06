@@ -1,0 +1,3 @@
+provides.0.namespace=fr.cea.nabla.ui.graalvm.p2.actions
+provides.0.name=execute
+provides.0.version=1.0.0

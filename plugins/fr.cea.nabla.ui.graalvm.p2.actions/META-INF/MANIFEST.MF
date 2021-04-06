@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GraalVM Integration P2 Actions
+Bundle-SymbolicName: fr.cea.nabla.ui.graalvm.p2.actions;singleton:=true
+Bundle-Version: 0.4.0.qualifier
+Automatic-Module-Name: fr.cea.nabla.ui.graalvm.p2.actions
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.equinox.p2.engine,
+ org.eclipse.equinox.p2.metadata,
+ org.eclipse.equinox.p2.touchpoint.eclipse,
+ org.eclipse.ui.workbench,
+ org.eclipse.swt,
+ org.eclipse.jface,
+ org.apache.commons.io

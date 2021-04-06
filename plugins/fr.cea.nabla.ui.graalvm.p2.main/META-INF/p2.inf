@@ -1,0 +1,23 @@
+metaRequirements.0.namespace=fr.cea.nabla.ui.graalvm.p2.actions
+metaRequirements.0.name=execute
+
+instructions.install = \
+    chmod(targetDir:${artifact.location},targetFile:install.sh,permissions:755);\
+
+instructions.install.import= \
+    org.eclipse.equinox.p2.touchpoint.natives.chmod
+
+instructions.configure = \
+    fr.cea.nabla.ui.graalvm.p2.actions.execute(installFolder:${installFolder},artifact:${artifact.location},program:install.sh);\
+    addProgramArg(programArg:-vm);\
+    addProgramArg(programArg:${installFolder}/graalvm-ce-java11-21.0.0/bin/java);
+
+instructions.configure.import = \
+    org.eclipse.equinox.p2.touchpoint.eclipse.addProgramArg
+
+instructions.unconfigure = \
+    removeProgramArg(programArg:-vm);\
+    removeProgramArg(programArg:${installFolder}/graalvm-ce-java11-21.0.0/bin/java);
+
+instructions.unconfigure.import = \
+    org.eclipse.equinox.p2.touchpoint.eclipse.removeProgramArg

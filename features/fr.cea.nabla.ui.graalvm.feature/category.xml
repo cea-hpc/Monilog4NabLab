@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="fr.cea.nabla.ui.graalvm.feature">
+      <category name="fr.cea.nabla.ui.graalvm.category"/>
+   </feature>
+   <category-def name="fr.cea.nabla.ui.graalvm.category" label="GraalVM Integration for NabLab"/>
+</site>
