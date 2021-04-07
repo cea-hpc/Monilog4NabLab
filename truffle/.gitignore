@@ -1,0 +1,13 @@
+*~
+*.cfg
+*.iml
+target/
+graalvm/
+.settings/
+.idea/
+/bin/
+/Coco.jar
+component/nabla-component.jar
+language/dependency-reduced-pom.xml
+native/nablanative
+
