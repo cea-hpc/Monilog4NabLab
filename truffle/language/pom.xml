@@ -94,21 +94,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
-					<configuration>
-						<useIncrementalCompilation>false</useIncrementalCompilation>
-						<compilerArgs>
-							<arg>-J-Dtruffle.dsl.GenerateSpecializationStatistics=true</arg>
-						</compilerArgs>
-						<!-- <proc>none</proc> -->
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 	<dependencies>
 		<dependency>
