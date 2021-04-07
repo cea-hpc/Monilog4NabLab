@@ -1,3 +1,0 @@
-package fr.cea.nabla.monilog.nablalib
-
-appender NabLabConsoleAppender(msg)
