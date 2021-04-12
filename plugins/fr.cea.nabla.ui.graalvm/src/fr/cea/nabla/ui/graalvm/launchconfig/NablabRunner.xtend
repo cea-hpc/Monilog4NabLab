@@ -29,25 +29,28 @@ import org.gemoc.monilog.api.MoniLogLibraryLocator
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.Source
+import org.eclipse.emf.ecore.EObject
 
 @Singleton
 class NablabRunner {
 	@Inject Provider<XtextResourceSet> resourceSetProvider
 	@Inject NabLabConsoleFactory consoleFactory
-	
+
 	val Engine engine = Engine.newBuilder().build()
 
 	package def launch(ILaunchConfiguration configuration) {
 		val project = NablabLaunchConstants::getProject(configuration)
 		val ngenFile = NablabLaunchConstants::getFile(project, configuration, NablabLaunchConstants.NGEN_FILE_LOCATION)
 		val ngenPath = ngenFile.rawLocation.toString
-		val nPath = newArrayList(NablabLaunchConstants::getFile(project, configuration, NablabLaunchConstants.N_FILE_LOCATION).rawLocation.toString)
-		val jsonPath = NablabLaunchConstants::getFile(project, configuration, NablabLaunchConstants.JSON_FILE_LOCATION).rawLocation.toString
+		val nPath = newHashSet
+		val jsonPath = NablabLaunchConstants::getFile(project, configuration, NablabLaunchConstants.JSON_FILE_LOCATION).
+			rawLocation.toString
 		val pythonExecPath = configuration.getAttribute(NablabLaunchConstants.PYTHON_EXEC_LOCATION, '')
 		val wsLocation = "file:" + ResourcesPlugin.workspace.root.location
 
-		if (ngenFile === null || !ngenFile.exists) throw new RuntimeException("Invalid file: " + ngenFile.fullPath)
-		val plaftormUri = URI::createPlatformResourceURI(ngenFile.project.name + '/' + ngenFile.projectRelativePath, true)
+		if(ngenFile === null || !ngenFile.exists) throw new RuntimeException("Invalid file: " + ngenFile.fullPath)
+		val plaftormUri = URI::createPlatformResourceURI(ngenFile.project.name + '/' + ngenFile.projectRelativePath,
+			true)
 		val resourceSet = resourceSetProvider.get
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE)
 		val uriMap = resourceSet.URIConverter.URIMap
@@ -57,61 +60,72 @@ class NablabRunner {
 		EcoreUtil::resolveAll(resourceSet)
 
 		val ngenApp = emfResource.contents.filter(NablagenApplication).head
+		
+		nPath += ngenApp.mainModule.type.findPath(wsLocation)
+		ngenApp.additionalModules.forEach[m|nPath += m.type.findPath(wsLocation)]
+		
 		val configs = ngenApp.targets.map[t|t.extensionConfigs].flatten
-		
-		configs.forEach[e|
-			val ext = e.extension
-			val prov = e.provider
-			val extensionWSRelativePath = ext.eResource.URI.toPlatformString(true)
-			val providerWSRelativePath = prov.eResource.URI.toPlatformString(true)
-			nPath += ResourcesPlugin.workspace.root.findFilesForLocationURI(new java.net.URI(wsLocation + extensionWSRelativePath)).get(0).rawLocation.toString
-			nPath += ResourcesPlugin.workspace.root.findFilesForLocationURI(new java.net.URI(wsLocation + providerWSRelativePath)).get(0).rawLocation.toString
+
+		configs.forEach [ e |
+			nPath += e.extension.findPath(wsLocation)
+			nPath += e.provider.findPath(wsLocation)
 		]
-		
+
 		consoleFactory.printConsole(MessageType.Start, "Starting interpretation process for: " + ngenFile.name)
 
-		val moniloggers = configuration.getAttribute(NablabLaunchConstants::MONILOGGER_FILES_LOCATIONS, newArrayList).filter[s|!s.blank].map[m|
-							ResourcesPlugin.workspace.root.getFile(new Path(m)).rawLocation.makeAbsolute.toString]
+		val moniloggers = configuration.getAttribute(NablabLaunchConstants::MONILOGGER_FILES_LOCATIONS, newArrayList).
+			filter[s|!s.blank].map [ m |
+				ResourcesPlugin.workspace.root.getFile(new Path(m)).rawLocation.makeAbsolute.toString
+			]
 
 		val name = ngenPath.substring(ngenPath.lastIndexOf(File::separator) + 1)
-		
+
 		consoleFactory.openConsole
 		val thread = new Thread([
 			Thread.currentThread.contextClassLoader = engine.class.classLoader
 			consoleFactory.clearAndActivateConsole
 			consoleFactory.printConsole(MessageType.Start, 'Starting execution: ' + name)
 			val t0 = System::nanoTime
-			
-			doGraal(new File(ngenPath), wsLocation, nPath.reduce[s1, s2| s1 + ':' + s2], jsonPath, moniloggers, pythonExecPath)
-			
+
+			doGraal(new File(ngenPath), wsLocation, nPath.reduce[s1, s2|s1 + ':' + s2], jsonPath, moniloggers,
+				pythonExecPath)
+
 			val t = (System::nanoTime - t0) * 0.000000001
 			consoleFactory.printConsole(MessageType.End, 'End of execution: ' + name + ' (' + t + 's)')
 		])
-		
+
 		thread.start
-		
+
 	}
-	
-	private def double doGraal(File ngenFile, String wd, String nPath, String jsonPath, Iterable<String> moniloggers, String pythonExecPath) {
-		
+
+	private def String findPath(EObject element, String wsPath) {
+		val wsRelativePath = element.eResource.URI.toPlatformString(true)
+		return ResourcesPlugin.workspace.root.findFilesForLocationURI(
+					new java.net.URI(wsPath + wsRelativePath)).get(0).rawLocation.toString
+	}
+
+	private def double doGraal(File ngenFile, String wd, String nPath, String jsonPath, Iterable<String> moniloggers,
+		String pythonExecPath) {
+
 		val Map<String, String> optionsMap = newHashMap
-		
+
 		if (!moniloggers.empty) {
 			val urls = MoniLogLibraryLocator.locate().stream.distinct
-			val moniloggerFiles = moniloggers.reduce[ s1, s2 | s1 + ', ' + s2 ]
-					+ ", " + urls.reduce[ s1, s2 | s1 + ', ' + s2 ].get
-			
+			val moniloggerFiles = moniloggers.reduce[s1, s2|s1 + ', ' + s2] + ", " +
+				urls.reduce[s1, s2|s1 + ', ' + s2].get
+
 			optionsMap.put("monilogger.files", moniloggerFiles)
 			optionsMap.put("python.Executable", pythonExecPath)
 			optionsMap.put("python.ForceImportSite", "true")
 		}
-		
+
 		var long t0
-		
+
 		val parent = Thread.currentThread.contextClassLoader
-		val hostClassLoader = new ExtensionClassLoader(#{"org.gemoc.monilog.appender", "org.gemoc.monilog.layout"}, parent)
+		val hostClassLoader = new ExtensionClassLoader(#{"org.gemoc.monilog.appender", "org.gemoc.monilog.layout"},
+			parent)
 		Thread.currentThread.contextClassLoader = hostClassLoader
-		
+
 		try (val context = Context.newBuilder().engine(engine) //
 				.allowAllAccess(true)
 				.option("nabla.wd", wd)
@@ -133,9 +147,9 @@ class NablabRunner {
 				Thread.currentThread.contextClassLoader = parent
 			}
 		}
-		
+
 		val t = (System::nanoTime - t0) * 0.000000001
-		
+
 		return t
 	}
 }

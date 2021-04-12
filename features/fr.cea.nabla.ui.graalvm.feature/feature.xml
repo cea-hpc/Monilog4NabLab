@@ -6,7 +6,7 @@
       plugin="fr.cea.nabla.ui.graalvm.p2.main">
 
    <description>
-      GraalVM integration for NabLab.
+      GraalVM and MoniLog integration plugins for NabLab.
    </description>
 
    <includes

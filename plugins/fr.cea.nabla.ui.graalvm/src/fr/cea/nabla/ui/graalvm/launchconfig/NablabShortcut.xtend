@@ -63,7 +63,6 @@ class NablabShortcut implements ILaunchShortcut {
 					configuration = type.newInstance(null, file.fullPath.removeFileExtension.lastSegment)
 					configuration.setAttribute(NablabLaunchConstants.PROJECT, file.project.name)
 					configuration.setAttribute(NablabLaunchConstants.NGEN_FILE_LOCATION, file.projectRelativePath.toPortableString)
-					configuration.setAttribute(NablabLaunchConstants.N_FILE_LOCATION, file.projectRelativePath.toPortableString.replace(".ngen", ".n"))
 					configuration.setAttribute(NablabLaunchConstants.JSON_FILE_LOCATION, file.projectRelativePath.toPortableString.replace(".ngen", ".json"))
 					
 					// save and return new configuration

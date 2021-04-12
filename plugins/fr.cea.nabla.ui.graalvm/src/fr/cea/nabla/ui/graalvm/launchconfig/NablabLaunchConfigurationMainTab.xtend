@@ -9,6 +9,10 @@
  *******************************************************************************/
 package fr.cea.nabla.ui.graalvm.launchconfig
 
+import fr.cea.nabla.ui.launchconfig.JsonFileSelectionAdapter
+import fr.cea.nabla.ui.launchconfig.NablagenFileSelectionAdapter
+import fr.cea.nabla.ui.launchconfig.NablagenProjectSelectionAdapter
+import fr.cea.nabla.ui.launchconfig.SourceFileContentProvider
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.CoreException
@@ -27,8 +31,6 @@ import org.eclipse.swt.widgets.Group
 import org.eclipse.swt.widgets.Text
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog
 import org.eclipse.ui.model.WorkbenchLabelProvider
-import fr.cea.nabla.ui.launchconfig.ProjectContentProvider
-import fr.cea.nabla.ui.launchconfig.NablagenProjectSelectionAdapter
 
 class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 {
@@ -39,7 +41,6 @@ class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 	boolean fDisableUpdate = false
 
 	Text fTxtProject
-	Text fTxtNFile
 	Text fTxtNGenFile
 	Text fTxtOptionsFile
 	Text fTxtMoniloggerFile
@@ -67,19 +68,6 @@ class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 		fBtnBrowseProject.addSelectionListener(new NablagenProjectSelectionAdapter(parent, fTxtProject))
 		fBtnBrowseProject.setText("Browse...");
 
-		val grpSource = new Group(topControl, SWT.NONE)
-		grpSource.setLayout(new GridLayout(2, false))
-		grpSource.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1))
-		grpSource.setText("Nablab File")
-
-		fTxtNFile = new Text(grpSource, SWT.BORDER)
-		fTxtNFile.addModifyListener([e | if (!fDisableUpdate) updateLaunchConfigurationDialog])
-		fTxtNFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1))
-
-		val btnBrowseSource = new Button(grpSource, SWT::NONE)
-		btnBrowseSource.addSelectionListener(new NablabFileSelectionAdapter(parent, fTxtNFile))
-		btnBrowseSource.setText("Browse...")
-
 		val grpGen = new Group(topControl, SWT.NONE)
 		grpGen.setLayout(new GridLayout(2, false))
 		grpGen.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1))
@@ -90,26 +78,26 @@ class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 		fTxtNGenFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1))
 
 		val btnBrowseGen = new Button(grpGen, SWT::NONE)
-		btnBrowseGen.addSelectionListener(new NablaGenFileSelectionAdapter(parent, fTxtNGenFile))
+		btnBrowseGen.addSelectionListener(new NablagenFileSelectionAdapter(parent, fTxtNGenFile))
 		btnBrowseGen.setText("Browse...")
 
 		val grpOptions = new Group(topControl, SWT.NONE)
 		grpOptions.setLayout(new GridLayout(2, false))
 		grpOptions.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1))
-		grpOptions.setText("Options File")
+		grpOptions.setText("Json File")
 
 		fTxtOptionsFile = new Text(grpOptions, SWT.BORDER)
 		fTxtOptionsFile.addModifyListener([e | if (!fDisableUpdate) updateLaunchConfigurationDialog])
 		fTxtOptionsFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1))
 
 		val btnBrowseOptions = new Button(grpOptions, SWT::NONE)
-		btnBrowseOptions.addSelectionListener(new NablabOptionsFileSelectionAdapter(parent, fTxtOptionsFile))
+		btnBrowseOptions.addSelectionListener(new JsonFileSelectionAdapter(parent, fTxtOptionsFile))
 		btnBrowseOptions.setText("Browse...")
 
 		val grpMonilogger = new Group(topControl, SWT.NONE)
 		grpMonilogger.setLayout(new GridLayout(2, false))
 		grpMonilogger.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1))
-		grpMonilogger.setText("Monilogger File")
+		grpMonilogger.setText("MoniLog File")
 
 		fTxtMoniloggerFile = new Text(grpMonilogger, SWT.BORDER)
 		fTxtMoniloggerFile.addModifyListener([e | if (!fDisableUpdate) updateLaunchConfigurationDialog])
@@ -128,10 +116,6 @@ class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 		fTxtPythonExec.addModifyListener([e | if (!fDisableUpdate) updateLaunchConfigurationDialog])
 		fTxtPythonExec.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1))
 
-//		val btnBrowsePythonExec = new Button(grpPythonExec, SWT::NONE)
-//		btnBrowsePythonExec.addSelectionListener(new MoniloggerFileSelectionAdapter(parent, fTxtPythonExec))
-//		btnBrowsePythonExec.setText("Browse...")
-
 		setControl(topControl)
 	}
 	
@@ -144,7 +128,6 @@ class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 	{
 		fDisableUpdate = true
 
-		fTxtNFile.text = ''
 		fTxtNGenFile.text = ''
 		fTxtOptionsFile.text = ''
 		fTxtMoniloggerFile.text = ''
@@ -153,7 +136,6 @@ class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 		try
 		{
 			fTxtProject.text = configuration.getAttribute(NablabLaunchConstants::PROJECT, '')
-			fTxtNFile.text = configuration.getAttribute(NablabLaunchConstants::N_FILE_LOCATION, '')
 			fTxtNGenFile.text = configuration.getAttribute(NablabLaunchConstants::NGEN_FILE_LOCATION, '')
 			fTxtOptionsFile.text = configuration.getAttribute(NablabLaunchConstants::JSON_FILE_LOCATION, '')
 			val moniloggers = configuration.getAttribute(NablabLaunchConstants::MONILOGGER_FILES_LOCATIONS, newArrayList)
@@ -169,7 +151,6 @@ class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 	override performApply(ILaunchConfigurationWorkingCopy configuration)
 	{
 		configuration.setAttribute(NablabLaunchConstants::PROJECT, fTxtProject.text)
-		configuration.setAttribute(NablabLaunchConstants::N_FILE_LOCATION, fTxtNFile.text)
 		configuration.setAttribute(NablabLaunchConstants::NGEN_FILE_LOCATION, fTxtNGenFile.text)
 		configuration.setAttribute(NablabLaunchConstants::JSON_FILE_LOCATION, fTxtOptionsFile.text)
 		configuration.setAttribute(NablabLaunchConstants::MONILOGGER_FILES_LOCATIONS, newArrayList(fTxtMoniloggerFile.text))
@@ -179,77 +160,10 @@ class NablabLaunchConfigurationMainTab extends AbstractLaunchConfigurationTab
 	override setDefaults(ILaunchConfigurationWorkingCopy configuration)
 	{
 		configuration.setAttribute(NablabLaunchConstants::PROJECT, '')
-		configuration.setAttribute(NablabLaunchConstants::N_FILE_LOCATION, '')
 		configuration.setAttribute(NablabLaunchConstants::NGEN_FILE_LOCATION, '')
 		configuration.setAttribute(NablabLaunchConstants::JSON_FILE_LOCATION, '')
 		configuration.setAttribute(NablabLaunchConstants::MONILOGGER_FILES_LOCATIONS, newArrayList)
 		configuration.setAttribute(NablabLaunchConstants::PYTHON_EXEC_LOCATION, '')
-	}
-}
-
-class NablabFileSelectionAdapter extends SelectionAdapter
-{
-	val Composite parent
-	val Text fTxtFile
-
-	new(Composite parent, Text fTxtFile)
-	{
-		this.parent = parent
-		this.fTxtFile = fTxtFile
-	}
-
-	override void widgetSelected(SelectionEvent e)
-	{
-		val dialog = new ElementTreeSelectionDialog(parent.shell, new WorkbenchLabelProvider, new fr.cea.nabla.ui.launchconfig.SourceFileContentProvider(NablabLaunchConfigurationMainTab::SourceFileExtension))
-		dialog.setTitle("Select Nablab File")
-		dialog.setMessage("Select the nablab file to execute:")
-		dialog.setInput(ResourcesPlugin.workspace.root)
-		if (dialog.open == Window.OK)
-			fTxtFile.setText((dialog.firstResult as IFile).fullPath.makeRelative.toPortableString)
-	}
-}
-
-class NablaGenFileSelectionAdapter extends SelectionAdapter
-{
-	val Composite parent
-	val Text fTxtFile
-
-	new(Composite parent, Text fTxtFile)
-	{
-		this.parent = parent
-		this.fTxtFile = fTxtFile
-	}
-
-	override void widgetSelected(SelectionEvent e)
-	{
-		val dialog = new ElementTreeSelectionDialog(parent.shell, new WorkbenchLabelProvider, new fr.cea.nabla.ui.launchconfig.SourceFileContentProvider(NablabLaunchConfigurationMainTab::GenFileExtension))
-		dialog.setTitle("Select Nablagen File")
-		dialog.setMessage("Select the nablagen file to use for the execution:")
-		dialog.setInput(ResourcesPlugin.workspace.root)
-		if (dialog.open == Window.OK)
-			fTxtFile.setText((dialog.firstResult as IFile).fullPath.makeRelative.toPortableString)
-	}
-}
-
-class NablabOptionsFileSelectionAdapter extends SelectionAdapter
-{
-	val Composite parent
-	val Text fTxtFile
-
-	new(Composite parent, Text fTxtFile)
-	{
-		this.parent = parent
-		this.fTxtFile = fTxtFile
-	}
-
-	override void widgetSelected(SelectionEvent e)
-	{
-		val dialog = new ElementTreeSelectionDialog(parent.shell, new WorkbenchLabelProvider, new fr.cea.nabla.ui.launchconfig.SourceFileContentProvider(NablabLaunchConfigurationMainTab::OptionsFileExtension))
-		dialog.setTitle("Select Options File")
-		dialog.setMessage("Select the options file to use for the execution:")
-		dialog.setInput(ResourcesPlugin.workspace.root)
-		if (dialog.open == Window.OK)
-			fTxtFile.setText((dialog.firstResult as IFile).fullPath.makeRelative.toPortableString)
 	}
 }
 
@@ -266,7 +180,7 @@ class MoniloggerFileSelectionAdapter extends SelectionAdapter
 
 	override void widgetSelected(SelectionEvent e)
 	{
-		val dialog = new ElementTreeSelectionDialog(parent.shell, new WorkbenchLabelProvider, new fr.cea.nabla.ui.launchconfig.SourceFileContentProvider(NablabLaunchConfigurationMainTab::MoniloggerFileExtension))
+		val dialog = new ElementTreeSelectionDialog(parent.shell, new WorkbenchLabelProvider, new SourceFileContentProvider(NablabLaunchConfigurationMainTab::MoniloggerFileExtension))
 		dialog.setTitle("Select Monilogger File")
 		dialog.setMessage("Select a monilogger file to add to the execution:")
 		dialog.setInput(ResourcesPlugin.workspace.root)

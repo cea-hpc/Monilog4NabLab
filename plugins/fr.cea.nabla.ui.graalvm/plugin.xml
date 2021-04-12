@@ -15,7 +15,7 @@
 	<extension
 		point="org.eclipse.debug.ui.launchShortcuts">
 		<shortcut
-			class="fr.cea.nabla.ui.graalvm.NablabGraalVMExecutableExtensionFactory:fr.cea.nabla.ui.graalvm.launchconfig.NablaShortcut"
+			class="fr.cea.nabla.ui.graalvm.NablabGraalVMExecutableExtensionFactory:fr.cea.nabla.ui.graalvm.launchconfig.NablabShortcut"
 			icon="icons/Nablagen.gif"
 			id="fr.cea.nabla.ui.graalvm.launchconfig.NablaShortcut"
 			label="Start Truffle-Based Interpretation"
