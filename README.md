@@ -21,7 +21,7 @@ Then, click on **Finish**.
 
 ## How to Install
 
-You can now install the generated archive through the **Help** > **Install New Software...** menu.
+Install the archive through the **Help** > **Install New Software...** menu.
 
 Click on the **Add..** button, then the **Archive...** button, and select your freshly exported archive.
 
