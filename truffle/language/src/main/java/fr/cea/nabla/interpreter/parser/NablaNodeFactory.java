@@ -93,6 +93,9 @@ import fr.cea.nabla.interpreter.nodes.instruction.NablaLoopNodeGen;
 import fr.cea.nabla.interpreter.nodes.instruction.NablaNopNode;
 import fr.cea.nabla.interpreter.nodes.instruction.NablaPrologBlockNode;
 import fr.cea.nabla.interpreter.nodes.instruction.NablaReturnNodeGen;
+import fr.cea.nabla.interpreter.nodes.instruction.NablaWhileNode;
+import fr.cea.nabla.interpreter.nodes.instruction.NablaWhileRepeatingNode;
+import fr.cea.nabla.interpreter.nodes.instruction.NablaWhileRepeatingNodeGen;
 import fr.cea.nabla.interpreter.nodes.instruction.NablaWriteArrayNodeGen;
 import fr.cea.nabla.interpreter.nodes.instruction.NablaWriteVariableNode;
 import fr.cea.nabla.interpreter.nodes.instruction.NablaWriteVariableNodeGen;
@@ -169,6 +172,7 @@ import fr.cea.nabla.ir.ir.UnaryExpression;
 import fr.cea.nabla.ir.ir.Variable;
 import fr.cea.nabla.ir.ir.VariableDeclaration;
 import fr.cea.nabla.ir.ir.VectorConstant;
+import fr.cea.nabla.ir.ir.While;
 
 public class NablaNodeFactory {
 
@@ -960,9 +964,8 @@ public class NablaNodeFactory {
 			instructionNode = createNablaLoopNode((Loop) instruction);
 			break;
 		case IrPackage.WHILE:
-//			instructionNode = createNablaWhileNode((While) instruction);
-//			break;
-			throw new UnsupportedOperationException();
+			instructionNode = createNablaWhileNode((While) instruction);
+			break;
 		case IrPackage.RETURN:
 			instructionNode = createNablaReturnNode((Return) instruction);
 			break;
@@ -1021,6 +1024,13 @@ public class NablaNodeFactory {
 
 		lexicalScope = lexicalScope.outer;
 		return jobRootNode;
+	}
+	
+	private NablaInstructionNode createNablaWhileNode(While whyle) {
+		final NablaInstructionNode instructionNode = createNablaInstructionNode(whyle.getInstruction());
+		final NablaExpressionNode conditionNode = createNablaExpressionNode(whyle.getCondition());
+		final NablaWhileRepeatingNode repeatingNode = NablaWhileRepeatingNodeGen.create(instructionNode, conditionNode);
+		return new NablaWhileNode(Truffle.getRuntime().createLoopNode(repeatingNode));
 	}
 
 	private NablaInstructionNode createNablaLoopNode(Loop loop) {

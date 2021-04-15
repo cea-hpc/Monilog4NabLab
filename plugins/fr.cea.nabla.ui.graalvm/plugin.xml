@@ -17,7 +17,7 @@
 		<shortcut
 			class="fr.cea.nabla.ui.graalvm.NablabGraalVMExecutableExtensionFactory:fr.cea.nabla.ui.graalvm.launchconfig.NablabShortcut"
 			icon="icons/Nablagen.gif"
-			id="fr.cea.nabla.ui.graalvm.launchconfig.NablaShortcut"
+			id="fr.cea.nabla.ui.graalvm.launchconfig.NablabShortcut"
 			label="Start Truffle-Based Interpretation"
 			modes="run">
 			<contextualLaunch>

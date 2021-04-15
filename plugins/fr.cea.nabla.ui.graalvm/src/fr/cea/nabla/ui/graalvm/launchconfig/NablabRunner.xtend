@@ -22,6 +22,7 @@ import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
 import org.eclipse.debug.core.ILaunchConfiguration
 import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.resource.XtextResourceSet
@@ -29,7 +30,6 @@ import org.gemoc.monilog.api.MoniLogLibraryLocator
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.Source
-import org.eclipse.emf.ecore.EObject
 
 @Singleton
 class NablabRunner {
@@ -60,6 +60,8 @@ class NablabRunner {
 		EcoreUtil::resolveAll(resourceSet)
 
 		val ngenApp = emfResource.contents.filter(NablagenApplication).head
+		
+		ngenFile.locationURI
 		
 		nPath += ngenApp.mainModule.type.findPath(wsLocation)
 		ngenApp.additionalModules.forEach[m|nPath += m.type.findPath(wsLocation)]
@@ -100,8 +102,7 @@ class NablabRunner {
 
 	private def String findPath(EObject element, String wsPath) {
 		val wsRelativePath = element.eResource.URI.toPlatformString(true)
-		return ResourcesPlugin.workspace.root.findFilesForLocationURI(
-					new java.net.URI(wsPath + wsRelativePath)).get(0).rawLocation.toString
+		return ResourcesPlugin.workspace.root.findMember(wsRelativePath).locationURI.rawPath
 	}
 
 	private def double doGraal(File ngenFile, String wd, String nPath, String jsonPath, Iterable<String> moniloggers,
@@ -115,7 +116,9 @@ class NablabRunner {
 				urls.reduce[s1, s2|s1 + ', ' + s2].get
 
 			optionsMap.put("monilogger.files", moniloggerFiles)
-			optionsMap.put("python.Executable", pythonExecPath)
+			if (pythonExecPath !== null && !pythonExecPath.blank) {
+				optionsMap.put("python.Executable", pythonExecPath)
+			}
 			optionsMap.put("python.ForceImportSite", "true")
 		}
 
@@ -146,6 +149,9 @@ class NablabRunner {
 			} finally {
 				Thread.currentThread.contextClassLoader = parent
 			}
+		} catch (Exception e) {
+			e.printStackTrace
+			consoleFactory.printConsole(MessageType.Error, e.message)
 		}
 
 		val t = (System::nanoTime - t0) * 0.000000001

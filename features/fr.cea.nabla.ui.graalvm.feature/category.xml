@@ -3,5 +3,8 @@
    <feature id="fr.cea.nabla.ui.graalvm.feature">
       <category name="fr.cea.nabla.ui.graalvm.category"/>
    </feature>
-   <category-def name="fr.cea.nabla.ui.graalvm.category" label="GraalVM Integration for NabLab"/>
+   <feature id="org.gemoc.monilog.feature">
+      <category name="fr.cea.nabla.ui.graalvm.category"/>
+   </feature>
+   <category-def name="fr.cea.nabla.ui.graalvm.category" label="GraalVM and MoniLog Integration for NabLab"/>
 </site>
