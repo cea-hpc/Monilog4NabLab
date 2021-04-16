@@ -108,7 +108,6 @@ import fr.cea.nabla.interpreter.nodes.job.NablaTimeLoopJobRepeatingNodeGen;
 import fr.cea.nabla.interpreter.runtime.NablaContext;
 import fr.cea.nabla.interpreter.runtime.NablaJNIProviderObject;
 import fr.cea.nabla.interpreter.runtime.NablaProviderObject;
-import fr.cea.nabla.interpreter.utils.GetFrameNode;
 import fr.cea.nabla.interpreter.utils.GetFrameNodeGen;
 import fr.cea.nabla.interpreter.values.CreateNablaValueNodeGen;
 import fr.cea.nabla.interpreter.values.FunctionCallHelper;
@@ -138,7 +137,6 @@ import fr.cea.nabla.ir.ir.FunctionCall;
 import fr.cea.nabla.ir.ir.If;
 import fr.cea.nabla.ir.ir.Instruction;
 import fr.cea.nabla.ir.ir.InstructionBlock;
-import fr.cea.nabla.ir.ir.InstructionJob;
 import fr.cea.nabla.ir.ir.IntConstant;
 import fr.cea.nabla.ir.ir.InternFunction;
 import fr.cea.nabla.ir.ir.Interval;
@@ -166,8 +164,6 @@ import fr.cea.nabla.ir.ir.RealConstant;
 import fr.cea.nabla.ir.ir.Return;
 import fr.cea.nabla.ir.ir.SetDefinition;
 import fr.cea.nabla.ir.ir.SetRef;
-import fr.cea.nabla.ir.ir.SetUpTimeLoopJob;
-import fr.cea.nabla.ir.ir.TearDownTimeLoopJob;
 import fr.cea.nabla.ir.ir.UnaryExpression;
 import fr.cea.nabla.ir.ir.Variable;
 import fr.cea.nabla.ir.ir.VariableDeclaration;
@@ -534,30 +530,6 @@ public class NablaNodeFactory {
 		setRootSourceSection(root, moduleRootNode);
 
 		return moduleRootNode;
-	}
-
-	private NablaJobNode createNablaTearDownTimeLoopJobNode(TearDownTimeLoopJob job) {
-		final NablaInstructionNode[] copyInstructions = job.getCopies().stream().map(c -> {
-			final FrameSlot source = lexicalScope.locals.get(c.getSource().getName());
-			final NablaReadVariableNode sourceReadNode = getReadVariableNode(source);
-			final FrameSlot destination = lexicalScope.locals.get(c.getDestination().getName());
-			return getWriteVariableNode(destination, sourceReadNode);
-		}).collect(Collectors.toList()).toArray(emptyInstructionArray);
-		final NablaInstructionNode body = copyInstructions.length == 1 ? copyInstructions[0]
-				: new NablaInstructionBlockNode(copyInstructions);
-		return new NablaInstructionJobNode(job.getName(), body);
-	}
-
-	private NablaJobNode createNablaSetUpTimeLoopJobNode(SetUpTimeLoopJob job) {
-		final NablaInstructionNode[] copyInstructions = job.getCopies().stream().map(c -> {
-			final FrameSlot source = lexicalScope.locals.get(c.getSource().getName());
-			final NablaReadVariableNode sourceReadNode = getReadVariableNode(source);
-			final FrameSlot destination = lexicalScope.locals.get(c.getDestination().getName());
-			return getWriteVariableNode(destination, sourceReadNode);
-		}).collect(Collectors.toList()).toArray(emptyInstructionArray);
-		final NablaInstructionNode body = copyInstructions.length == 1 ? copyInstructions[0]
-				: new NablaInstructionBlockNode(copyInstructions);
-		return new NablaInstructionJobNode(job.getName(), body);
 	}
 
 	private NablaExpressionNode createNablaBinaryExpressionNode(NablaExpressionNode leftNode, String operator,
@@ -929,7 +901,7 @@ public class NablaNodeFactory {
 		return instructions.length == 1 ? instructions[0] : new NablaInstructionBlockNode(instructions);
 	}
 
-	private NablaJobNode createNablaInstructionJobNode(InstructionJob job) {
+	private NablaJobNode createNablaInstructionJobNode(Job job) {
 		final NablaInstructionNode body = createNablaInstructionNode(job.getInstruction());
 		setSourceSection(job.getInstruction(), body);
 		return new NablaInstructionJobNode(job.getName(), body);
@@ -1000,14 +972,8 @@ public class NablaNodeFactory {
 		final NablaJobNode jobNode;
 		lexicalScope = new LexicalScope(lexicalScope, true);
 		switch (job.eClass().getClassifierID()) {
-		case IrPackage.INSTRUCTION_JOB:
-			jobNode = createNablaInstructionJobNode((InstructionJob) job);
-			break;
-		case IrPackage.SET_UP_TIME_LOOP_JOB:
-			jobNode = createNablaSetUpTimeLoopJobNode((SetUpTimeLoopJob) job);
-			break;
-		case IrPackage.TEAR_DOWN_TIME_LOOP_JOB:
-			jobNode = createNablaTearDownTimeLoopJobNode((TearDownTimeLoopJob) job);
+		case IrPackage.JOB:
+			jobNode = createNablaInstructionJobNode((Job) job);
 			break;
 		case IrPackage.EXECUTE_TIME_LOOP_JOB:
 			jobNode = createNablaExecuteTimeLoopJobNode((ExecuteTimeLoopJob) job);
@@ -1169,16 +1135,6 @@ public class NablaNodeFactory {
 			lexicalScope.locals.put(indexName, indexSlot);
 		}
 
-		final List<FrameSlot[]> copies = job.getCopies().stream().map(c -> {
-			final String copySource = c.getSource().getName();
-			final String copyDestination = c.getDestination().getName();
-			final FrameSlot sourceSlot = lexicalScope.locals.computeIfAbsent(copySource,
-					n -> moduleFrameDescriptor.findOrAddFrameSlot(n, null, FrameSlotKind.Illegal));
-			final FrameSlot destinationSlot = lexicalScope.locals.computeIfAbsent(copyDestination,
-					n -> moduleFrameDescriptor.findOrAddFrameSlot(n, null, FrameSlotKind.Illegal));
-			return new FrameSlot[] { sourceSlot, destinationSlot };
-		}).collect(Collectors.toList());
-
 		final NablaReadVariableNode read = NablaReadVariableNodeGen.create(indexSlot.getIdentifier().toString(),
 				GetFrameNodeGen.create(indexSlot.getIdentifier().toString()));
 		final NablaIntConstantNode one = NablaIntConstantNodeGen.create(1);
@@ -1186,16 +1142,15 @@ public class NablaNodeFactory {
 		final NablaWriteVariableNode indexUpdate = NablaWriteVariableNodeGen.create(indexSlot, add,
 				GetFrameNodeGen.create(indexSlot.getIdentifier().toString()));
 
-		final GetFrameNode toWrite = GetFrameNodeGen.create(copies.get(0)[0].getIdentifier().toString());
-
 		final NablaRootNode[] innerJobs = job.getCalls().stream().map(j -> createNablaJobNode(j))
 				.collect(Collectors.toList()).toArray(new NablaRootNode[0]);
 		final NablaJobBlockNode loopBody = new NablaJobBlockNode(innerJobs);
 
 		final NablaExpressionNode conditionNode = createNablaExpressionNode(job.getWhileCondition());
+		
+		final NablaInstructionNode copyInstructionNode = createNablaInstructionNode(job.getInstruction());
 
-		final NablaTimeLoopJobRepeatingNode repeatingNode = NablaTimeLoopJobRepeatingNodeGen.create(copies, indexUpdate,
-				toWrite, loopBody, conditionNode);
+		final NablaTimeLoopJobRepeatingNode repeatingNode = NablaTimeLoopJobRepeatingNodeGen.create(copyInstructionNode, indexUpdate, loopBody, conditionNode);
 
 		final NablaIntConstantNode zero = NablaIntConstantNodeGen.create(0);
 		final NablaWriteVariableNode indexInit = NablaWriteVariableNodeGen.create(indexSlot, zero,
