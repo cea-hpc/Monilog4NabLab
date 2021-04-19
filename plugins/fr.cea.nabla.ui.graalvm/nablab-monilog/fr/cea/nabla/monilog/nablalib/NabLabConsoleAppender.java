@@ -3,7 +3,7 @@ package fr.cea.nabla.monilog.nablalib;
 import com.google.inject.Inject;
 
 import fr.cea.nabla.generator.NablaGeneratorMessageDispatcher.MessageType;
-import fr.cea.nabla.ui.NabLabConsoleFactory;
+import fr.cea.nabla.ui.console.NabLabConsoleFactory;
 import fr.cea.nabla.ui.graalvm.Activator;
 
 import org.gemoc.monilog.api.IMoniLogAppender;
