@@ -14,6 +14,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.equinox.p2.engine.spi.ProvisioningAction;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.progress.UIJob;
 
 public class ExecuteAction extends ProvisioningAction {
@@ -61,6 +63,38 @@ public class ExecuteAction extends ProvisioningAction {
 		downloadedJob.runInUIThread(new NullProgressMonitor());
 	}
 	
+	private void openDialog(String title, String message, int dialogType) {
+		final UIJob uiJob = new UIJob(title) {
+			@Override
+			public IStatus runInUIThread(IProgressMonitor monitor) {
+				getDisplay().asyncExec(new Runnable() {
+					public void run() {
+						switch (dialogType) {
+						case MessageDialog.CONFIRM:
+							MessageDialog.openConfirm(getDisplay().getActiveShell(), title, message);
+							break;
+						case MessageDialog.ERROR:
+							MessageDialog.openError(getDisplay().getActiveShell(), title, message);
+							break;
+						case MessageDialog.INFORMATION:
+							MessageDialog.openInformation(getDisplay().getActiveShell(), title, message);
+							break;
+						case MessageDialog.QUESTION:
+							MessageDialog.openQuestion(getDisplay().getActiveShell(), title, message);
+							break;
+						case MessageDialog.WARNING:
+							MessageDialog.openWarning(getDisplay().getActiveShell(), title, message);
+							break;
+						}
+					}
+				});
+				return Status.OK_STATUS;
+			}
+		};
+
+		uiJob.runInUIThread(new NullProgressMonitor());
+	}
+	
 	public IStatus execute(Map<String, Object> parameters) {
 		final String installFolder = (String) parameters.get(INSTALL_FOLDER);
 		final String artifact = (String) parameters.get(ARTIFACT);
@@ -78,7 +112,8 @@ public class ExecuteAction extends ProvisioningAction {
 					openDownloadingDialog();
 					FileUtils.copyInputStreamToFile(downloadStream, graalArchive);
 					if (!graalArchive.exists()) {
-						return new Status(IStatus.ERROR, PLUGIN_ID, "Could not download GraalVM.");
+						openDialog("Could not download GraalVM", "You will have to perform GraalVM installation manually.", MessageDialog.WARNING);
+						return Status.OK_STATUS;
 					} else {
 						openDownloadedDialog();
 					}
@@ -96,7 +131,8 @@ public class ExecuteAction extends ProvisioningAction {
 			p.waitFor();
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
-			return new Status(IStatus.ERROR, PLUGIN_ID, "Cannot execute " + fullPath);
+			openDialog("Could not complete GraalVM installation", "You will have to perform GraalVM installation manually.", MessageDialog.WARNING);
+			return Status.OK_STATUS;
 		}
 		return Status.OK_STATUS;
 	}
