@@ -85,8 +85,8 @@ class NablabRunner {
 			optionsMap.put("monilogger.files", moniloggerFiles)
 			if (pythonExecPath !== null && !pythonExecPath.blank) {
 				optionsMap.put("python.Executable", pythonExecPath)
+				optionsMap.put("python.ForceImportSite", "true")
 			}
-			optionsMap.put("python.ForceImportSite", "true")
 		}
 
 		val executionThread = new Thread([
