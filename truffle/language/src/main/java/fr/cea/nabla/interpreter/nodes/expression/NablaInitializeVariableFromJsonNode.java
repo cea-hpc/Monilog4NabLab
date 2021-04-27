@@ -159,7 +159,7 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 
 	@Specialization
 	protected Object doInitialize(NV0Real value) {
-		return new NV0Real(value.getData());
+		return new NV0Real(initialValue.getAsDouble());
 	}
 	
 	@Specialization(guards = "arrays.isArray(value)", limit = "3")
