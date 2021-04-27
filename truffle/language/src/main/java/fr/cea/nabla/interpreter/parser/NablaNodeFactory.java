@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.common.collect.Iterators;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -485,9 +484,10 @@ public class NablaNodeFactory {
 				return false;
 			});
 		}).map(o -> {
+			final String[] optionPath = new String[] { variableNameToModuleName.get(o.getName()), o.getName() };
 			final JsonObject jsonOptions = moduleNameToOptions.get(variableNameToModuleName.get(o.getName()));
 			if (jsonOptions != null && jsonOptions.has(o.getName())) {
-				return createVariableDeclaration(o, jsonOptions.get(o.getName()));
+				return createVariableDeclaration(o, optionPath);
 			} else if (o.getDefaultValue() == null) {
 				throw new IllegalStateException("Mandatory option missing in Json file: " + o.getName());
 			} else {
@@ -1283,7 +1283,7 @@ public class NablaNodeFactory {
 //		}
 //	}
 
-	private NablaWriteVariableNode createVariableDeclaration(Variable variable, JsonElement jsonValue) {
+	private NablaWriteVariableNode createVariableDeclaration(Variable variable, String[] optionPath) {
 		final NablaWriteVariableNode result;
 		final String name = variable.getName();
 		final FrameSlot frameSlot = lexicalScope.descriptor.findOrAddFrameSlot(name, null, FrameSlotKind.Illegal);
@@ -1295,20 +1295,20 @@ public class NablaNodeFactory {
 			final BaseType type = (BaseType) variable.getType();
 			if (defaultValue == null) {
 				final NablaExpressionNode defaultValueExpression;
-				if (jsonValue == null) {
+				if (optionPath == null) {
 					defaultValueExpression = createNablaDefaultValueNode(type);
 				} else {
 					final NablaExpressionNode baseValue = createNablaDefaultValueNode(type);
-					defaultValueExpression = getInitializeVariableFromJsonNode(baseValue, jsonValue);
+					defaultValueExpression = getInitializeVariableFromJsonNode(baseValue, optionPath);
 				}
 				result = getWriteVariableNode(frameSlot, defaultValueExpression);
 			} else {
 				final NablaExpressionNode defaultValueExpression;
-				if (jsonValue == null) {
+				if (optionPath == null) {
 					defaultValueExpression = createNablaExpressionNode(defaultValue);
 				} else {
 					final NablaExpressionNode baseValue = createNablaExpressionNode(defaultValue);
-					defaultValueExpression = getInitializeVariableFromJsonNode(baseValue, jsonValue);
+					defaultValueExpression = getInitializeVariableFromJsonNode(baseValue, optionPath);
 				}
 				result = getWriteVariableNode(frameSlot, defaultValueExpression);
 			}
@@ -1330,12 +1330,12 @@ public class NablaNodeFactory {
 				i++;
 			}
 			final NablaExpressionNode valueExpression;
-			if (jsonValue == null) {
+			if (optionPath == null) {
 				valueExpression = createNablaDefaultValueNode(type.getBase().getPrimitive(), sizeNodes);
 			} else {
 				final NablaExpressionNode baseValue = createNablaDefaultValueNode(type.getBase().getPrimitive(),
 						sizeNodes);
-				valueExpression = getInitializeVariableFromJsonNode(baseValue, jsonValue);
+				valueExpression = getInitializeVariableFromJsonNode(baseValue, optionPath);
 			}
 			result = getWriteVariableNode(frameSlot, valueExpression);
 //			} else {
@@ -1492,9 +1492,9 @@ public class NablaNodeFactory {
 	}
 
 	private NablaInitializeVariableFromJsonNode getInitializeVariableFromJsonNode(NablaExpressionNode value,
-			JsonElement jsonValue) {
-		assert (jsonValue != null);
-		return NablaInitializeVariableFromJsonNodeGen.create(jsonValue, value);
+			String[] optionPath) {
+		assert (optionPath != null);
+		return NablaInitializeVariableFromJsonNodeGen.create(optionPath, value);
 	}
 
 	private void setRootSourceSection(IrAnnotable element, NablaRootNode node) {

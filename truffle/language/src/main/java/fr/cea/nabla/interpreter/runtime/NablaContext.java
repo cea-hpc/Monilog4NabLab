@@ -15,6 +15,7 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -44,6 +45,7 @@ public final class NablaContext {
 	private final PrintWriter output;
 	private final NablaFunctionRegistry functionRegistry;
 	private final AllocationReporter allocationReporter;
+	private final JsonObject jsonOptions;
 	@CompilationFinal(dimensions = 1)
 	private Value[] nativeLibraries;
 	@CompilationFinal(dimensions = 1)
@@ -68,25 +70,24 @@ public final class NablaContext {
 		this.output = new PrintWriter(env.out(), true);
 		this.allocationReporter = env.lookup(AllocationReporter.class);
 		this.functionRegistry = new NablaFunctionRegistry(language);
+		
+		final String jsonOptionsFile = env.getOptions().get(NablaOptions.OPTIONS);
+		String jsonOptionsString = "";
+		if (jsonOptionsFile != null && !jsonOptionsFile.isBlank()) {
+			try {
+				jsonOptionsString = new String(Files.readAllBytes(Paths.get(jsonOptionsFile)));
+			} catch (IOException e) {
+				throw new NablaInternalError(e, e.getMessage());
+			}
+		}
+		if (jsonOptionsString != null && !jsonOptionsString.isEmpty()) {
+			final Gson gson = new Gson();
+			this.jsonOptions = gson.fromJson(jsonOptionsString, JsonObject.class);
+		} else {
+			this.jsonOptions = null;
+		}
 	}
 
-	private JsonObject getJsonOptions() {
-		try {
-			final String jsonOptionsFile = env.getOptions().get(NablaOptions.OPTIONS);
-			if (jsonOptionsFile != null && !jsonOptionsFile.isBlank()) {
-				final String jsonOptionsString = new String(Files.readAllBytes(Paths.get(jsonOptionsFile)));
-				if (jsonOptionsString != null && !jsonOptionsString.isEmpty()) {
-					final Gson gson = new Gson();
-					return gson.fromJson(jsonOptionsString, JsonObject.class);
-				}
-			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		
-		return null;
-	}
-	
 //	public void setProvider(String providerName, Value providerValue) {
 //		final int length = this.nativeLibraries.length;
 //		final Value[] nativeLibraries = new Value[length + 1];
@@ -99,9 +100,18 @@ public final class NablaContext {
 //		this.libraryProviders[length] = providerName;
 //	}
 	
+	public JsonElement getOption(String[] optionPath) {
+		JsonObject result = jsonOptions;
+		for (int i = 0; i < optionPath.length - 1; i++) {
+			result = result.get(optionPath[i]).getAsJsonObject();
+		}
+		return result.get(optionPath[optionPath.length - 1]);
+	}
+	
+	
 	public void initializeMesh() {
-		final JsonObject jsonOptions = getJsonOptions().getAsJsonObject("mesh");
-		meshWrapper.initialize(jsonOptions);
+		final JsonObject meshOptions = jsonOptions.getAsJsonObject("mesh");
+		meshWrapper.initialize(meshOptions);
 	}
 	
 	public CartesianMesh2DWrapper getMeshWrapper() {
@@ -114,8 +124,6 @@ public final class NablaContext {
 		// TODO dynamicize
 //		extensions.put("CartesianMesh2D", env.getOptions().get(NablaOptions.MESH));
 		
-		final JsonObject jsonOptions = getJsonOptions();
-
 		this.nativeLibraries = new Value[extensions.size()];
 		this.libraryProviders = new String[extensions.size()];
 		final int[] iPtr = new int[] { 0 };

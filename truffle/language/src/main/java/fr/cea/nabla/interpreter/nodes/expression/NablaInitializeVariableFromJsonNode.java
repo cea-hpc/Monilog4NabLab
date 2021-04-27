@@ -2,10 +2,13 @@ package fr.cea.nabla.interpreter.nodes.expression;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.oracle.truffle.api.dsl.CachedContext;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
 
+import fr.cea.nabla.interpreter.NablaLanguage;
+import fr.cea.nabla.interpreter.runtime.NablaContext;
 import fr.cea.nabla.interpreter.values.NV0Bool;
 import fr.cea.nabla.interpreter.values.NV0Int;
 import fr.cea.nabla.interpreter.values.NV0Real;
@@ -27,23 +30,27 @@ import fr.cea.nabla.interpreter.values.NV4Real;
 @NodeChild(value = "value", type = NablaExpressionNode.class)
 public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressionNode {
 
-	private final JsonElement initialValue;
+	private final String[] optionPath;
 
-	public NablaInitializeVariableFromJsonNode(JsonElement initialValue) {
-		this.initialValue = initialValue;
+	public NablaInitializeVariableFromJsonNode(String[] optionPath) {
+		this.optionPath = optionPath;
 	}
 
 	protected NablaInitializeVariableFromJsonNode() {
-		this.initialValue = null;
+		this.optionPath = null;
 	}
 
 	@Specialization
-	protected Object doInitialize(NV0Bool value) {
+	protected Object doInitialize(NV0Bool value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		return new NV0Bool(initialValue.getAsBoolean());
 	}
 
 	@Specialization
-	protected Object doInitialize(NV1Bool value) {
+	protected Object doInitialize(NV1Bool value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final boolean[] data = new boolean[value.getData().length];
 		for (int i = 0; i < data.length; i++) {
@@ -53,7 +60,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV2Bool value) {
+	protected Object doInitialize(NV2Bool value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final boolean[][] valueData = value.getData();
 		final boolean[][] data = new boolean[valueData.length][valueData[0].length];
@@ -66,7 +75,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV3Bool value) {
+	protected Object doInitialize(NV3Bool value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final boolean[][][] valueData = value.getData();
 		final boolean[][][] data = new boolean[valueData.length][valueData[0].length][valueData[0][0].length];
@@ -81,7 +92,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV4Bool value) {
+	protected Object doInitialize(NV4Bool value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final boolean[][][][] valueData = value.getData();
 		final boolean[][][][] data = new boolean[valueData.length][valueData[0].length][valueData[0][0].length][valueData[0][0][0].length];
@@ -98,12 +111,16 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV0Int value) {
+	protected Object doInitialize(NV0Int value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		return new NV0Int(initialValue.getAsInt());
 	}
 
 	@Specialization(guards = "arrays.isArray(value)", limit = "3")
-	protected Object doInitialize(Object value, @CachedLibrary("value") NV1IntLibrary arrays) {
+	protected Object doInitialize(Object value, @CachedLibrary("value") NV1IntLibrary arrays,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final int[] data = new int[arrays.length(value)];
 		for (int i = 0; i < data.length; i++) {
@@ -113,7 +130,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV2Int value) {
+	protected Object doInitialize(NV2Int value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final int[][] valueData = value.getData();
 		final int[][] data = new int[valueData.length][valueData[0].length];
@@ -126,7 +145,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV3Int value) {
+	protected Object doInitialize(NV3Int value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final int[][][] valueData = value.getData();
 		final int[][][] data = new int[valueData.length][valueData[0].length][valueData[0][0].length];
@@ -141,7 +162,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV4Int value) {
+	protected Object doInitialize(NV4Int value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final int[][][][] valueData = value.getData();
 		final int[][][][] data = new int[valueData.length][valueData[0].length][valueData[0][0].length][valueData[0][0][0].length];
@@ -158,12 +181,16 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV0Real value) {
+	protected Object doInitialize(NV0Real value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		return new NV0Real(initialValue.getAsDouble());
 	}
 	
 	@Specialization(guards = "arrays.isArray(value)", limit = "3")
-	protected Object doInitialize(Object value, @CachedLibrary("value") NV1RealLibrary arrays) {
+	protected Object doInitialize(Object value, @CachedLibrary("value") NV1RealLibrary arrays,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final double[] data = new double[arrays.length(value)];
 		for (int i = 0; i < data.length; i++) {
@@ -173,7 +200,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV2Real value) {
+	protected Object doInitialize(NV2Real value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final double[][] valueData = value.getData();
 		final double[][] data = new double[valueData.length][valueData[0].length];
@@ -186,7 +215,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV3Real value) {
+	protected Object doInitialize(NV3Real value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final double[][][] valueData = value.getData();
 		final double[][][] data = new double[valueData.length][valueData[0].length][valueData[0][0].length];
@@ -201,7 +232,9 @@ public abstract class NablaInitializeVariableFromJsonNode extends NablaExpressio
 	}
 
 	@Specialization
-	protected Object doInitialize(NV4Real value) {
+	protected Object doInitialize(NV4Real value,//
+			@CachedContext(NablaLanguage.class) NablaContext context) {
+		final JsonElement initialValue = context.getOption(optionPath);
 		final JsonArray ja = initialValue.getAsJsonArray();
 		final double[][][][] valueData = value.getData();
 		final double[][][][] data = new double[valueData.length][valueData[0].length][valueData[0][0].length][valueData[0][0][0].length];
