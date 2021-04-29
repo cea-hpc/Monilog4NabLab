@@ -403,7 +403,8 @@ public abstract class NablaScopedNode extends NablaNode {
 			for (int i = 0; i < writeNodes.length; i++) {
 				NablaWriteVariableNode writeNode = writeNodes[i];
 				if (member.equals(writeNode.getSlot().getIdentifier())) {
-					return i;
+					// First two arguments reserved for internal stuff.
+					return i + 2;
 				}
 			}
 			return -1;
