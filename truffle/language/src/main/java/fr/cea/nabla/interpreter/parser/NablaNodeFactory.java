@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.common.collect.Iterators;
@@ -424,8 +425,12 @@ public class NablaNodeFactory {
 
 	private final Map<ExternFunction, NablaProviderObject> functionToProvider = new HashMap<>();
 
-	public NablaRootNode createModule(IrRoot root, JsonObject jsonFileContent) {
+	private final List<Source> sources = new ArrayList<>();
+
+	public NablaRootNode createModule(IrRoot root, JsonObject jsonFileContent, List<Source> nablabSources) {
 		assert lexicalScope == null;
+
+		sources.addAll(nablabSources);
 
 		final String rootName = root.getName();
 
@@ -991,7 +996,7 @@ public class NablaNodeFactory {
 		lexicalScope = lexicalScope.outer;
 		return jobRootNode;
 	}
-	
+
 	private NablaInstructionNode createNablaWhileNode(While whyle) {
 		final NablaInstructionNode instructionNode = createNablaInstructionNode(whyle.getInstruction());
 		final NablaExpressionNode conditionNode = createNablaExpressionNode(whyle.getCondition());
@@ -1147,10 +1152,11 @@ public class NablaNodeFactory {
 		final NablaJobBlockNode loopBody = new NablaJobBlockNode(innerJobs);
 
 		final NablaExpressionNode conditionNode = createNablaExpressionNode(job.getWhileCondition());
-		
+
 		final NablaInstructionNode copyInstructionNode = createNablaInstructionNode(job.getInstruction());
 
-		final NablaTimeLoopJobRepeatingNode repeatingNode = NablaTimeLoopJobRepeatingNodeGen.create(copyInstructionNode, indexUpdate, loopBody, conditionNode);
+		final NablaTimeLoopJobRepeatingNode repeatingNode = NablaTimeLoopJobRepeatingNodeGen.create(copyInstructionNode,
+				indexUpdate, loopBody, conditionNode);
 
 		final NablaIntConstantNode zero = NablaIntConstantNodeGen.create(0);
 		final NablaWriteVariableNode indexInit = NablaWriteVariableNodeGen.create(indexSlot, zero,
@@ -1474,10 +1480,8 @@ public class NablaNodeFactory {
 		throw new UnsupportedOperationException();
 	}
 
-	private int getDetail(IrAnnotable irElement, String key) {
-		return irElement.getAnnotations().stream().flatMap(a -> a.getDetails().stream())
-				.filter(e -> e.getKey().equals(key)).map(e -> e.getValue()).findFirst().map(v -> Integer.parseInt(v))
-				.orElse(-1);
+	private String getDetail(IrAnnotation annotation, String key) {
+		return annotation.getDetails().get(key);
 	}
 
 	private NablaReadVariableNode getReadVariableNode(FrameSlot slot) {
@@ -1498,22 +1502,40 @@ public class NablaNodeFactory {
 	}
 
 	private void setRootSourceSection(IrAnnotable element, NablaRootNode node) {
-		final List<IrAnnotation> annotations = element.getAnnotations();
-		if (!annotations.isEmpty()) {
-			final int offset = getDetail(element, "offset");
-			final int length = getDetail(element, "length");
-			node.setSourceSection(source.createSection(offset, length));
-		} else {
-			node.setSourceSection(source.createUnavailableSection());
-		}
+		element.getAnnotations().stream().filter(a -> a.getSource().equals("nabla-origin")).findFirst()
+				.ifPresent(annotation -> {
+					final String elementSourceURI = getDetail(annotation, "uri");
+					if (elementSourceURI != null) {
+						sources.stream().filter(s -> s.getURI().toString().equals(elementSourceURI)).findFirst()
+								.ifPresentOrElse(s -> {
+									final int offset = Integer.parseInt(getDetail(annotation, "offset"));
+									final int length = Integer.parseInt(getDetail(annotation, "length"));
+									final int startLine = s.getLineNumber(offset);
+									final int startColumn = s.getColumnNumber(offset);
+									final int endLine = s.getLineNumber(offset + length);
+									final int endColumn = s.getColumnNumber(offset + length);
+									node.setSourceSection(s.createSection(startLine, startColumn, endLine, endColumn));
+								}, () -> {
+									node.setSourceSection(source.createUnavailableSection());
+								});
+					}
+				});
 	}
 
 	private void setSourceSection(IrAnnotable element, NablaNode node) {
-		final List<IrAnnotation> annotations = element.getAnnotations();
-		if (!annotations.isEmpty()) {
-			final int offset = getDetail(element, "offset");
-			final int length = getDetail(element, "length");
-			node.setSourceSection(offset, length);
-		}
+		element.getAnnotations().stream().filter(a -> a.getSource().equals("nabla-origin")).findFirst()
+		.ifPresent(annotation -> {
+			final String elementSourceURI = getDetail(annotation, "uri");
+			if (elementSourceURI != null) {
+				sources.stream().filter(s -> s.getURI().toString().equals(elementSourceURI)).findFirst()
+						.ifPresentOrElse(s -> {
+							final int offset = Integer.parseInt(getDetail(annotation, "offset"));
+							final int length = Integer.parseInt(getDetail(annotation, "length"));
+							node.setSourceSection(s, offset, length);
+						}, () -> {
+							node.setUnavailableSourceSection();
+						});
+			}
+		});
 	}
 }

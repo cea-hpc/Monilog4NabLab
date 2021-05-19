@@ -16,6 +16,9 @@ public abstract class NablaReadArgumentNode extends NablaExpressionNode {
 		this.sizeSlots = null;
 	}
 	
+	/*
+	 * FIXME: is this used?
+	 */
 	public NablaReadArgumentNode(int index, FrameSlot[] sizeSlots) {
 		this.index = index;
 		this.sizeSlots = sizeSlots;

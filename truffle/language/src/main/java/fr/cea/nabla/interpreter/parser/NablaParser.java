@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,8 +41,17 @@ public class NablaParser {
 				LogManager.shutdown();
 				final Env env = NablaLanguage.getCurrentContext().getEnv();
 				final OptionValues options = env.getOptions();
-				final List<URI> nablaFileUris = options.get(NablaOptions.NABLAPATH).stream()
+				final List<String> nablaPaths = options.get(NablaOptions.NABLAPATH);
+				final List<URI> nablaFileUris = nablaPaths.stream()
 						.map(s -> URI.createFileURI(s)).collect(Collectors.toList());
+				final List<Source> nablaSources = nablaPaths.stream().map(path -> {
+					try {
+						return Source.newBuilder("nabla", new URL("file:" + path)).build();
+					} catch (IOException e) {
+						e.printStackTrace();
+						return null;
+					}
+				}).filter(s -> s != null).collect(Collectors.toList());
 				final String jsonOptionsFilePath = options.get(NablaOptions.OPTIONS);
 				EPackage.Registry.INSTANCE.put(IrPackage.eNS_URI, IrPackage.eINSTANCE);
 				final IrRoot irRoot = getIrRoot(source, nablaFileUris);
@@ -55,7 +66,7 @@ public class NablaParser {
 				}
 
 				final RootCallTarget moduleCallTarget = Truffle.getRuntime()
-						.createCallTarget(new NablaNodeFactory(nablaLanguage, source).createModule(irRoot, jsonOptions));
+						.createCallTarget(new NablaNodeFactory(nablaLanguage, source).createModule(irRoot, jsonOptions, nablaSources));
 				final RootNode evalModule = new NablaEvalRootNode(nablaLanguage, moduleCallTarget);
 				final RootCallTarget result = Truffle.getRuntime().createCallTarget(evalModule);
 				return result;

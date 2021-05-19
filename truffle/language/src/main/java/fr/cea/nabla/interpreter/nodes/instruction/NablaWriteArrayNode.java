@@ -1,5 +1,7 @@
 package fr.cea.nabla.interpreter.nodes.instruction;
 
+import java.util.Map;
+
 import org.graalvm.polyglot.Value;
 
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -191,6 +193,13 @@ public abstract class NablaWriteArrayNode extends NablaInstructionNode implement
 
 	protected boolean isNV4Real() {
 		return baseType == double.class && dimensions == 4;
+	}
+
+	@Override
+	public Map<String, Object> getDebugProperties() {
+		Map<String, Object> debugProperties = super.getDebugProperties();
+		debugProperties.put("variableSlot", slot);
+		return debugProperties;
 	}
 
 	@Override

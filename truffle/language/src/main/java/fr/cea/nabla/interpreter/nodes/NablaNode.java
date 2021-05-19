@@ -19,12 +19,21 @@ public abstract class NablaNode extends Node implements InstrumentableNode {
 	private static final int NO_SOURCE = -1;
 	private static final int UNAVAILABLE_SOURCE = -2;
 
+	@CompilationFinal
 	private int sourceCharIndex = NO_SOURCE;
+	
+	@CompilationFinal
 	private int sourceLength;
+
+	@CompilationFinal
+	private Source source;
 
 	@Override
 	@TruffleBoundary
 	public SourceSection getSourceSection() {
+		if (source == null) {
+			return null;
+		}
 		if (sourceCharIndex == NO_SOURCE) {
 			// AST node without source
 			return null;
@@ -34,15 +43,14 @@ public abstract class NablaNode extends Node implements InstrumentableNode {
 			// not adopted yet
 			return null;
 		}
-		SourceSection rootSourceSection = rootNode.getSourceSection();
-		if (rootSourceSection == null) {
-			return null;
-		}
-		Source source = rootSourceSection.getSource();
 		if (sourceCharIndex == UNAVAILABLE_SOURCE) {
-			return source.createUnavailableSection();
+			return Source.newBuilder("nabla", Source.CONTENT_NONE, "unavailable source").build().createUnavailableSection();
 		} else {
-			return source.createSection(sourceCharIndex, sourceLength);
+			final int startLine = source.getLineNumber(sourceCharIndex);
+			final int startColumn = source.getColumnNumber(sourceCharIndex);
+			final int endLine = source.getLineNumber(sourceCharIndex + sourceLength);
+			final int endColumn = source.getColumnNumber(sourceCharIndex + sourceLength);
+			return source.createSection(startLine, startColumn, endLine, endColumn);
 		}
 	}
 
@@ -62,7 +70,7 @@ public abstract class NablaNode extends Node implements InstrumentableNode {
 		return sourceLength;
 	}
 
-	public final void setSourceSection(int charIndex, int length) {
+	public final void setSourceSection(Source source, int charIndex, int length) {
 		assert sourceCharIndex == NO_SOURCE : "source must only be set once";
 		if (charIndex < 0) {
 			throw new IllegalArgumentException("charIndex < 0");
@@ -71,6 +79,7 @@ public abstract class NablaNode extends Node implements InstrumentableNode {
 		}
 		this.sourceCharIndex = charIndex;
 		this.sourceLength = length;
+		this.source = source;
 	}
 
 	public final void setUnavailableSourceSection() {

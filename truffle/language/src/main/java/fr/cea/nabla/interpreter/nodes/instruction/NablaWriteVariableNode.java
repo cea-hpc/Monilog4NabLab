@@ -40,7 +40,7 @@ import fr.cea.nabla.interpreter.values.NV4Real;
 public abstract class NablaWriteVariableNode extends NablaInstructionNode implements InstrumentableNode, TruffleObject {
 
 	private final FrameSlot slot;
-	
+
 	public NablaWriteVariableNode(FrameSlot slot) {
 		this.slot = slot;
 	}
@@ -48,7 +48,7 @@ public abstract class NablaWriteVariableNode extends NablaInstructionNode implem
 	protected NablaWriteVariableNode() {
 		this.slot = null;
 	}
-	
+
 	@Specialization
 	protected Object doWrite(Value value, Frame toWrite) {
 		toWrite.setObject(slot, value);
@@ -166,7 +166,7 @@ public abstract class NablaWriteVariableNode extends NablaInstructionNode implem
 	public boolean isInstrumentable() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean hasTag(Class<? extends Tag> tag) {
 		return tag.equals(StandardTags.WriteVariableTag.class) || super.hasTag(tag);
@@ -176,10 +176,10 @@ public abstract class NablaWriteVariableNode extends NablaInstructionNode implem
 	public WrapperNode createWrapper(ProbeNode probeNode) {
 		return new NablaWriteVariableNodeWrapper(this, probeNode);
 	}
-	
+
 	@Override
-    public Object getNodeObject() {
-        return NodeObjectDescriptor.writeVariable(getSlot().getIdentifier().toString());
-    }
+	public Object getNodeObject() {
+		return NodeObjectDescriptor.writeVariable(getSlot().getIdentifier().toString());
+	}
 
 }

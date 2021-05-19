@@ -9,12 +9,11 @@
  */
 package fr.cea.nabla.interpreter.parser;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
@@ -69,57 +68,52 @@ public class StandaloneCompilationChainHelper implements ICompilationChainHelper
 
 	@Override
 	public IrRoot getIrRoot(Source source, final List<URI> nablaPaths) {
-		final String nablaGenModel = source.getCharacters().toString();
+		final URI nablaGenPath = URI.createFileURI(source.getPath());
 		final String mathPath = "/math.n";
 		final String linearAlgebraPath = "/linearalgebra.n";
 		final String linearAlgebraProviderPath = "/linearalgebra.ngen";
-		return getIrRoot(nablaGenModel, nablaPaths, mathPath, linearAlgebraPath, linearAlgebraProviderPath);
+		return getIrRoot(nablaGenPath, nablaPaths, mathPath, linearAlgebraPath, linearAlgebraProviderPath);
 	}
-	
+
 	private InputStream getNablaResourceAsStream(String path) throws FileNotFoundException {
 		InputStream result = getClass().getResourceAsStream(path);
 		if (result == null) {
 			final String testProjectPath = System.getProperty("user.dir");
 			final String nablaPluginsPath = testProjectPath + "/../../plugins/";
-			final String mathFunctionsPath = nablaPluginsPath + "fr.cea.nabla";
-			result = new FileInputStream(new File(mathFunctionsPath + path));
+			final String pathPrefix = nablaPluginsPath + "fr.cea.nabla";
+			result = new FileInputStream(new File(pathPrefix + path));
 		}
 		return result;
 	}
 
-	public IrRoot getIrRoot(String genModel, final List<URI> nablaPaths, String mathPath,
-			String linearAlgebraPath, String linearAlgebraProviderPath) {
+	public IrRoot getIrRoot(URI genModelURI, final List<URI> nablaPaths, String mathPath, String linearAlgebraPath,
+			String linearAlgebraProviderPath) {
 		try {
+			final ResourceSet rs = resourceSetProvider.get();
+
 			final InputStream inMath = getNablaResourceAsStream(mathPath);
 			final InputStream inLinear = getNablaResourceAsStream(linearAlgebraPath);
 			final InputStream inLinearProvider = getNablaResourceAsStream(linearAlgebraProviderPath);
-			final String math = new BufferedReader(new InputStreamReader(inMath)).lines()
-					.reduce((s1, s2) -> s1 + "\n" + s2).get();
-			final String linearAlgebra = new BufferedReader(new InputStreamReader(inLinear)).lines()
-					.reduce((s1, s2) -> s1 + "\n" + s2).get();
-			final String linearAlgebraProvider = new BufferedReader(new InputStreamReader(inLinearProvider)).lines()
-					.reduce((s1, s2) -> s1 + "\n" + s2).get();
-			
-			final ResourceSet rs = resourceSetProvider.get();
-			
-			final NablagenApplication nablaGenRoot = nablagenParseHelper.parse(genModel, rs);
-			nablagenParseHelper.parse(linearAlgebraProvider, rs);
-			
-			nablaParseHelper.parse(math, rs);
-			nablaParseHelper.parse(linearAlgebra, rs);
-			
+
+			final NablagenApplication nablaGenRoot = rs.getResource(genModelURI, true).getContents().stream()
+					.filter(o -> o instanceof NablagenApplication).findFirst().map(o -> (NablagenApplication) o)
+					.orElseThrow();
+
+			final URL mathURL = getClass().getResource(mathPath);
+			final URL linearURL = getClass().getResource(linearAlgebraPath);
+			final URL linearProviderURL = getClass().getResource(linearAlgebraProviderPath);
+
+			nablagenParseHelper.parse(inLinearProvider, URI.createURI(linearProviderURL.toString()), null, rs);
+			nablaParseHelper.parse(inMath, URI.createURI(mathURL.toString()), null, rs);
+			nablaParseHelper.parse(inLinear, URI.createURI(linearURL.toString()), null, rs);
+
 			nablaPaths.forEach(p -> {
-//				try {
-					rs.getResource(p, true);
-//					rs.createResource(p).load(null);
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
+				rs.getResource(p, true);
 			});
-			
+
 			EcoreUtil.resolveAll(rs);
 			validate(nablaGenRoot);
-			
+
 			if (nablaGenRoot != null) {
 				final IrRootBuilder interpreter = irRootBuilderProvider.get();
 				final IrRoot irRoot = interpreter.buildInterpreterIr(nablaGenRoot, "");
@@ -127,11 +121,11 @@ public class StandaloneCompilationChainHelper implements ICompilationChainHelper
 			} else {
 				return null;
 			}
-		} catch  (Exception e) {
+		} catch (Exception e) {
 			throw Exceptions.sneakyThrow(e);
 		}
 	}
-	
+
 	private void validate(EObject modelElement) {
 		final List<Issue> issues = validationTestHelper.validate(modelElement);
 		if (!issues.isEmpty()) {
