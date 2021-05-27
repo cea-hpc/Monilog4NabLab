@@ -10,14 +10,14 @@ instructions.install.import= \
 instructions.configure = \
     fr.cea.nabla.ui.graalvm.p2.actions.execute(installFolder:${installFolder},artifact:${artifact.location},program:install.sh);\
     addProgramArg(programArg:-vm);\
-    addProgramArg(programArg:${installFolder}/graalvm-ce-java11-21.0.0/bin/java);
+    addProgramArg(programArg:${installFolder}/graalvm-ce-java11-21.1.0/bin/java);
 
 instructions.configure.import = \
     org.eclipse.equinox.p2.touchpoint.eclipse.addProgramArg
 
 instructions.unconfigure = \
     removeProgramArg(programArg:-vm);\
-    removeProgramArg(programArg:${installFolder}/graalvm-ce-java11-21.0.0/bin/java);
+    removeProgramArg(programArg:${installFolder}/graalvm-ce-java11-21.1.0/bin/java);
 
 instructions.unconfigure.import = \
     org.eclipse.equinox.p2.touchpoint.eclipse.removeProgramArg

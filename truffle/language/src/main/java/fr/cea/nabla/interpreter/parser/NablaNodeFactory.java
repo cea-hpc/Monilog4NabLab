@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.common.collect.Iterators;

@@ -4,8 +4,8 @@ Bundle-Name: truffle-api-wrapper
 Bundle-SymbolicName: truffle-api-wrapper
 Bundle-Version: 1.0.0.qualifier
 Automatic-Module-Name: truffle-api-wrapper
-Bundle-ClassPath: mvn/org.graalvm.sdk.graal-sdk-21.0.0.jar,
- mvn/org.graalvm.truffle.truffle-api-21.0.0.jar
+Bundle-ClassPath: mvn/graal-sdk-21.1.0.jar,
+ mvn/truffle-api-21.1.0.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.oracle.truffle.api,
  com.oracle.truffle.api.debug,

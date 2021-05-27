@@ -26,8 +26,8 @@ public class DownloadingDialog extends TitleAreaDialog {
 	@Override
 	public void create() {
 		super.create();
-		setTitle("Downloading GraalVM Community Edition 21.0.0");
-		setMessage("Please wait while GraalVM Community Edition 21.0.0 is being downloaded...", IMessageProvider.INFORMATION);
+		setTitle("Downloading GraalVM Community Edition 21.1.0");
+		setMessage("Please wait while GraalVM Community Edition 21.1.0 is being downloaded...", IMessageProvider.INFORMATION);
 	}
 
 	@Override

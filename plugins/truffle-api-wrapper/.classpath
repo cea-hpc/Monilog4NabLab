@@ -6,7 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="mvn/org.graalvm.sdk.graal-sdk-21.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="mvn/org.graalvm.truffle.truffle-api-21.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="mvn/graal-sdk-21.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="mvn/truffle-api-21.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

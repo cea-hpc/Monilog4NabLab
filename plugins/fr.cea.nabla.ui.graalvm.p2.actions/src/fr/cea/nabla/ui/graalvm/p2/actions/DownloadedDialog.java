@@ -18,8 +18,8 @@ public class DownloadedDialog extends TitleAreaDialog {
 	@Override
 	public void create() {
 		super.create();
-		setTitle("GraalVM Community Edition 21.0.0 Downloaded");
-		setMessage("GraalVM Community Edition 21.0.0 has been downloaded.", IMessageProvider.INFORMATION);
+		setTitle("GraalVM Community Edition 21.1.0 Downloaded");
+		setMessage("GraalVM Community Edition 21.1.0 has been downloaded.", IMessageProvider.INFORMATION);
 	}
 
 	@Override

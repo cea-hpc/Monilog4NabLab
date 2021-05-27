@@ -127,6 +127,11 @@ public class CartesianMesh2DWrapper {
 		return meshWrapper.invokeMember("getGeometry").invokeMember("getNodes");
 	}
 
+	@TruffleBoundary
+	public Value getQuads() {
+		return meshWrapper.invokeMember("getGeometry").invokeMember("getQuads");
+	}
+
 //	@TruffleBoundary
 //	public int getNbElems(final String connectivityName) {
 //		int _switchResult = (int) 0;

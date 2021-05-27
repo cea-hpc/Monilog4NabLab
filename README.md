@@ -27,7 +27,7 @@ Click on the **Add..** button, then the **Archive...** button, and select your f
 
 The process is then exactly the same as when updating your Eclipse IDE.
 
-During the installation, GraalVM Community Edition 21.0.0 will be downloaded in the installation folder of your IDE if not found there, and the Truffle-based NabLab interpreter and the MoniLog instrument will be deployed on it.
+During the installation, GraalVM Community Edition 21.1.0 will be downloaded in the installation folder of your IDE if not found there, and the Truffle-based NabLab interpreter and the MoniLog instrument will be deployed on it.
 
 Once you restart your IDE, you will be able to define MoniLog files, and run Truffle-based interterpreted NabLab executions.
 

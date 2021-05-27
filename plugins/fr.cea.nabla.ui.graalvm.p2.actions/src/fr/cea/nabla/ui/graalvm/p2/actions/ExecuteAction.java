@@ -20,9 +20,9 @@ import org.eclipse.ui.progress.UIJob;
 
 public class ExecuteAction extends ProvisioningAction {
 
-	private static final String GRAAL_VM_URL = "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0/graalvm-ce-java11-linux-amd64-21.0.0.tar.gz";
-	private static final String GRAALVM_FOLDER = "graalvm-ce-java11-21.0.0";
-	private static final String GRAALVM_ARCHIVE = "graalvm-ce-java11-linux-amd64-21.0.0.tar.gz";
+	private static final String GRAAL_VM_URL = "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz";
+	private static final String GRAALVM_FOLDER = "graalvm-ce-java11-21.1.0";
+	private static final String GRAALVM_ARCHIVE = "graalvm-ce-java11-linux-amd64-21.1.0.tar.gz";
 	public static final String PLUGIN_ID = "fr.cea.nabla.ui.graalvm.p2.actions";
 	public static final String INSTALL_FOLDER = "installFolder";
 	public static final String ARTIFACT = "artifact";

@@ -17,22 +17,25 @@ public class NabLabConsoleAppender implements IMoniLogAppender {
 	}
 	
 	@Override
-	public void call(String message, Object... args) {
-		consoleFactory.printConsole(MessageType.Exec, message);
+	public void call(Object... args) {
+		consoleFactory.printConsole(MessageType.Exec, args[0].toString());
 	}
 
 	@Override
 	public int getNbMinArgs() {
-		return 0;
+		return 1;
 	}
 
 	@Override
 	public int getNbMaxArgs() {
-		return 0;
+		return 1;
 	}
 
 	@Override
 	public Class<?> getArgType(int argIndex) {
+		if (argIndex == 0) {
+			return String.class;
+		}
 		return null;
 	}
 	

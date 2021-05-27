@@ -24,7 +24,7 @@
               <executable>${basedir}/make_component.sh</executable>
               <arguments>
                 <argument>${java.version}</argument>
-                <argument>21.0.0</argument>
+                <argument>21.1.0</argument>
               </arguments>
             </configuration>
           </execution>
