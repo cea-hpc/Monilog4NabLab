@@ -28,11 +28,15 @@ public abstract class NablaTimeLoopJobRepeatingNode extends Node implements Repe
 
 	@Child
 	private NablaInstructionNode copyInstructionNode;
-	
-	protected NablaTimeLoopJobRepeatingNode(NablaInstructionNode copyInstructionNode) {
+
+	protected NablaTimeLoopJobRepeatingNode(NablaInstructionNode copyInstructionNode, boolean dumpVariables) {
 		this.copyInstructionNode = copyInstructionNode;
 	}
-	
+
+	protected NablaTimeLoopJobRepeatingNode(NablaInstructionNode copyInstructionNode) {
+		this(copyInstructionNode, false);
+	}
+
 	protected NablaTimeLoopJobRepeatingNode() {
 	}
 

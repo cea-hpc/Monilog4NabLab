@@ -31,14 +31,12 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
-import com.oracle.truffle.api.object.Layout;
 
 import fr.cea.nabla.interpreter.NablaLanguage;
 import fr.cea.nabla.interpreter.NablaOptions;
+import fr.cea.nabla.javalib.mesh.PvdFileWriter2D;
 
 public final class NablaContext {
-
-	static final Layout LAYOUT = Layout.createLayout();
 
 	private final Env env;
 	private final BufferedReader input;
@@ -51,8 +49,9 @@ public final class NablaContext {
 	@CompilationFinal(dimensions = 1)
 	private String[] libraryProviders;
 	private final CartesianMesh2DWrapper meshWrapper = new CartesianMesh2DWrapper();
+	private final PvdFileWriter2D writer;
 
-	private final Assumption contextActive = Truffle.getRuntime().createAssumption("context active");
+	private final Assumption contextActive = Truffle.getRuntime().createAssumption("NabLab context active");
 
 	public Assumption getContextActive() {
 		return contextActive;
@@ -83,8 +82,16 @@ public final class NablaContext {
 		if (jsonOptionsString != null && !jsonOptionsString.isEmpty()) {
 			final Gson gson = new Gson();
 			this.jsonOptions = gson.fromJson(jsonOptionsString, JsonObject.class);
+			final JsonElement outputPath = jsonOptions.get("outputPath");
+			if (outputPath != null && !outputPath.getAsString().isBlank()) {
+				this.writer = new PvdFileWriter2D("moduleName", outputPath.getAsString());
+			} else {
+				this.writer = null;
+			}
+			
 		} else {
 			this.jsonOptions = null;
+			this.writer = null;
 		}
 	}
 
@@ -116,6 +123,10 @@ public final class NablaContext {
 	
 	public CartesianMesh2DWrapper getMeshWrapper() {
 		return meshWrapper;
+	}
+	
+	public PvdFileWriter2D getWriter() {
+		return writer;
 	}
 	
 	public void initializeNativeExtensions() {

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.common.collect.Iterators;
@@ -20,6 +21,10 @@ import com.oracle.truffle.api.source.Source;
 
 import fr.cea.nabla.interpreter.NablaLanguage;
 import fr.cea.nabla.interpreter.NablaOptions;
+import fr.cea.nabla.interpreter.nodes.NablaDumpVariableNode;
+import fr.cea.nabla.interpreter.nodes.NablaDumpVariableNodeGen;
+import fr.cea.nabla.interpreter.nodes.NablaDumpVariablesNode;
+import fr.cea.nabla.interpreter.nodes.NablaDumpVariablesNodeGen;
 import fr.cea.nabla.interpreter.nodes.NablaModuleNode;
 import fr.cea.nabla.interpreter.nodes.NablaNode;
 import fr.cea.nabla.interpreter.nodes.NablaRootNode;
@@ -158,6 +163,8 @@ import fr.cea.nabla.ir.ir.Loop;
 import fr.cea.nabla.ir.ir.MaxConstant;
 import fr.cea.nabla.ir.ir.MinConstant;
 import fr.cea.nabla.ir.ir.Parenthesis;
+import fr.cea.nabla.ir.ir.PostProcessedVariable;
+import fr.cea.nabla.ir.ir.PostProcessing;
 import fr.cea.nabla.ir.ir.PrimitiveType;
 import fr.cea.nabla.ir.ir.RealConstant;
 import fr.cea.nabla.ir.ir.Return;
@@ -438,7 +445,7 @@ public class NablaNodeFactory {
 		this.appJsonOptions = jsonFileContent.getAsJsonObject(Strings.toFirstLower(rootName));
 
 		final String wd = NablaContext.getCurrent().getStringOption(NablaOptions.WD);
-
+		
 		root.getProviders().stream().filter(p -> p.getProviderName() != null && p.getProviderName().endsWith("JNI"))
 				.forEach(p -> {
 					final String pName = p.getProviderName();
@@ -520,7 +527,7 @@ public class NablaNodeFactory {
 		root.getModules().stream().flatMap(m -> m.getFunctions().stream()).filter(f -> f instanceof InternFunction)
 				.map(f -> (InternFunction) f).forEach(f -> functions.computeIfAbsent(f,
 						function -> createNablaFunctionNode((InternFunction) function)));
-
+		
 		final NablaRootNode[] jobNodes = root.getMain().getCalls().stream().map(j -> createNablaJobNode(j))
 				.collect(Collectors.toList()).toArray(new NablaRootNode[0]);
 
@@ -1154,6 +1161,45 @@ public class NablaNodeFactory {
 
 		final NablaInstructionNode copyInstructionNode = createNablaInstructionNode(job.getInstruction());
 
+//		TODO: insert dump node here
+		
+		EObject container = job.eContainer();
+		while (!(container instanceof IrRoot)) {
+			container = container.eContainer();
+		}
+		final IrRoot root = (IrRoot) container;
+
+		final Variable timeVar = root.getTimeVariable();
+		final Variable coordsVar = root.getNodeCoordVariable();
+		
+		final PostProcessing pp = root.getPostProcessing();
+		final List<PostProcessedVariable> ppVars = pp.getOutputVariables();
+		
+		final NablaDumpVariableNode[] nodeVars = ppVars.stream().filter(v -> v.getSupport().getName().equals("node"))
+				.map(v -> NablaDumpVariableNodeGen.create(v.getOutputName(),
+							IrTypeExtensions.getBaseSizes(v.getTarget().getType()).size(), true,
+							getReadVariableNode(lexicalScope.locals.get(v.getTarget().getName()))))
+				.collect(Collectors.toList()).toArray(new NablaDumpVariableNode[0]);
+		
+		final NablaDumpVariableNode[] cellVars = ppVars.stream().filter(v -> v.getSupport().getName().equals("cell"))
+				.map(v -> NablaDumpVariableNodeGen.create(v.getOutputName(),
+							IrTypeExtensions.getBaseSizes(v.getTarget().getType()).size(), false,
+							getReadVariableNode(lexicalScope.locals.get(v.getTarget().getName()))))
+				.collect(Collectors.toList()).toArray(new NablaDumpVariableNode[0]);
+		
+
+		final String indexIdentifier = indexSlot.getIdentifier().toString();
+		final NablaReadVariableNode readIndex = NablaReadVariableNodeGen.create(indexIdentifier, GetFrameNodeGen.create(indexIdentifier));
+
+		final String timeIdentifier = lexicalScope.locals.get(timeVar.getName()).getIdentifier().toString();
+		final NablaReadVariableNode readTime = NablaReadVariableNodeGen.create(timeIdentifier, GetFrameNodeGen.create(timeIdentifier));
+
+		final String coordsIdentifier = lexicalScope.locals.get(coordsVar.getName()).getIdentifier().toString();
+		final NablaReadVariableNode readCoords = NablaReadVariableNodeGen.create(coordsIdentifier, GetFrameNodeGen.create(coordsIdentifier));
+		
+		final NablaDumpVariablesNode dumpNode = NablaDumpVariablesNodeGen.create(nodeVars, cellVars, readIndex, readTime, readCoords);
+		
+		
 		final NablaTimeLoopJobRepeatingNode repeatingNode = NablaTimeLoopJobRepeatingNodeGen.create(copyInstructionNode,
 				indexUpdate, loopBody, conditionNode);
 
