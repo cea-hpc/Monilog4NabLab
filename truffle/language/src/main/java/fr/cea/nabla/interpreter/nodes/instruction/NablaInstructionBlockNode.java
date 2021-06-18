@@ -18,7 +18,6 @@ import com.oracle.truffle.api.nodes.NodeVisitor;
 import fr.cea.nabla.interpreter.nodes.NablaNode;
 import fr.cea.nabla.interpreter.nodes.local.NablaScopedNode;
 
-@GenerateWrapper
 public class NablaInstructionBlockNode extends NablaInstructionNode
 		implements BlockNode.ElementExecutor<NablaInstructionNode> {
 
@@ -70,10 +69,10 @@ public class NablaInstructionBlockNode extends NablaInstructionNode
 	public void executeVoid(VirtualFrame frame, NablaInstructionNode node, int index, int argument) {
 		node.executeGeneric(frame);
 	}
-
+	
 	@Override
-	public WrapperNode createWrapper(ProbeNode probeNode) {
-		return new NablaInstructionBlockNodeWrapper(this, probeNode);
+	public boolean isInstrumentable() {
+		return false;
 	}
 
 	/**
