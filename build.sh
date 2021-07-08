@@ -5,7 +5,7 @@ start=$(pwd)
 #Build truffle interpreter
 echo "Building truffle interpreter component."
 cd $start/truffle
-mvn clean package
+mvn clean package --settings $start/.github/workflows/settings.xml
 echo "Done."
 
 #Build monilog
