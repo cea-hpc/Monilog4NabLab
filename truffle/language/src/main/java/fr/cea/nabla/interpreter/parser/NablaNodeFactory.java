@@ -420,8 +420,6 @@ public class NablaNodeFactory {
 
 	private JsonObject appJsonOptions;
 
-	private String meshClassName;
-
 	private final Map<ExternFunction, NablaProviderObject> functionToProvider = new HashMap<>();
 
 	private final List<Source> sources = new ArrayList<>();
@@ -450,14 +448,12 @@ public class NablaNodeFactory {
 					p.getFunctions().forEach(f -> functionToProvider.put(f, providerObject));
 				});
 
-		this.meshClassName = root.getMeshClassName();
-
 		lexicalScope = new LexicalScope(lexicalScope);
 
 		moduleFrameDescriptor = lexicalScope.descriptor;
 
 		final NablaWriteVariableNode[] connectivitySizeNodes;
-		connectivitySizeNodes = root.getConnectivities().stream().filter(c -> c.isMultiple()).map(c -> {
+		connectivitySizeNodes = root.getMesh().getConnectivities().stream().filter(c -> c.isMultiple()).map(c -> {
 			final String connectivityName = c.getName();
 			final FrameSlot frameSlot = moduleFrameDescriptor.findOrAddFrameSlot(connectivityName, null,
 					FrameSlotKind.Illegal);
@@ -465,7 +461,6 @@ public class NablaNodeFactory {
 			final String ast = (c.getInTypes().isEmpty() ? "get" : "Max") + "Nb"
 					+ Strings.toFirstUpper(connectivityName);
 			final NablaExpressionNode nbNodes = CreateNablaValueNodeGen.create(int.class,
-//					NablaLLVMCallNodeGen.create(meshClassName, ast, emptyExpressionArray));
 					NablaMeshWrapperCallNodeGen.create(ast, emptyExpressionArray));
 			final NablaWriteVariableNode result = getWriteVariableNode(frameSlot, nbNodes);
 			setSourceSection(c, result);
@@ -504,7 +499,6 @@ public class NablaNodeFactory {
 				FrameSlotKind.Illegal);
 		lexicalScope.locals.put(nodeCoordName, coordinatesSlot);
 		final NablaExpressionNode nodes = CreateNablaValueNodeGen.create(double[][].class,
-//				NablaLLVMCallNodeGen.create(meshClassName, "getNodes", emptyExpressionArray));
 				NablaMeshWrapperCallNodeGen.create("getNodes", emptyExpressionArray));
 		final NablaWriteVariableNode nodeCoords = getWriteVariableNode(coordinatesSlot, nodes);
 
@@ -781,7 +775,6 @@ public class NablaNodeFactory {
 				.map(s -> lexicalScope.locals.get(s)).map(s -> getReadVariableNode(s)).collect(Collectors.toList())
 				.toArray(emptyExpressionArray);
 		return CreateNablaValueNodeGen.create(typeClass,
-//				NablaLLVMCallNodeGen.create(meshClassName, getterName, args));
 				NablaMeshWrapperCallNodeGen.create(getterName, args));
 	}
 
