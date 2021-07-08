@@ -94,7 +94,8 @@ class NablabRunner {
 			val hostClassLoader = new ExtensionClassLoader(#{"org.gemoc.monilog.appender", "org.gemoc.monilog.layout"},
 				parent)
 			Thread.currentThread.contextClassLoader = hostClassLoader
-			try (val context = Context.newBuilder().engine(engine) //
+			try {
+				val context = Context.newBuilder().engine(engine) //
 					.allowAllAccess(true)
 					.option("nabla.wd", wsLocation)
 					.option("nabla.np", nPath.reduce[s1, s2|s1 + ':' + s2])
@@ -102,7 +103,6 @@ class NablabRunner {
 					.options(optionsMap)
 					.logHandler(new NabLabConsoleHandler(consoleFactory))
 					.build()
-			) {
 				val Thread interpreterThread = new Thread([
 					consoleFactory.printConsole(MessageType.Exec, "Starting code interpretation")
 					val startTime = System::nanoTime
