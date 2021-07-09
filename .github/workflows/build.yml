@@ -37,15 +37,9 @@ jobs:
       # Check-out Monilob4NabLab
       - uses: actions/checkout@v2
 
-      # Check-out monilog (then accessible through $GITHUB_WORKSPACE, so the job can access it)
-      - uses: actions/checkout@v2
-        with:
-          repository: gemoc/monilog
-          path: ./monilog
-
       # Run the build.sh script
       - name: Run build.sh script
-        run: ./build.sh $GITHUB_WORKSPACE/monilog
+        run: ./build.sh
         shell: bash
         env:
           USERNAME: ${{ github.actor }}
