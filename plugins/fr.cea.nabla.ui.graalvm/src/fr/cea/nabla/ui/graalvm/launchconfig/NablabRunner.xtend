@@ -13,26 +13,33 @@ import com.google.inject.Inject
 import com.google.inject.Provider
 import com.google.inject.Singleton
 import fr.cea.nabla.generator.NablaGeneratorMessageDispatcher.MessageType
+import fr.cea.nabla.ir.IrUtils
 import fr.cea.nabla.nablagen.NablagenApplication
 import fr.cea.nabla.ui.console.NabLabConsoleFactory
 import fr.cea.nabla.ui.console.NabLabConsoleHandler
+import fr.cea.nabla.ui.console.NabLabConsoleRunnable
 import java.io.File
 import java.util.Map
+import org.eclipse.core.resources.IContainer
+import org.eclipse.core.resources.IResource
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
 import org.eclipse.debug.core.ILaunchConfiguration
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.gemoc.monilog.api.MoniLogLibraryLocator
+import org.gemoc.monilog.moniLog.CallEvent
+import org.gemoc.monilog.moniLog.ContextVarReference
+import org.gemoc.monilog.moniLog.WriteEvent
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
-import org.graalvm.polyglot.Source
-import fr.cea.nabla.ui.console.NabLabConsoleRunnable
 import org.graalvm.polyglot.PolyglotException
-import fr.cea.nabla.ir.IrUtils
+import org.graalvm.polyglot.Source
 
 @Singleton
 class NablabRunner {
@@ -40,7 +47,7 @@ class NablabRunner {
 	@Inject NabLabConsoleFactory consoleFactory
 
 	val Engine engine = Engine.newBuilder().build()
-	
+
 	package def launch(ILaunchConfiguration configuration) {
 		val project = NablabLaunchConstants::getProject(configuration)
 		val ngenFile = NablabLaunchConstants::getFile(project, configuration, NablabLaunchConstants.NGEN_FILE_LOCATION)
@@ -65,7 +72,7 @@ class NablabRunner {
 		val ngenApp = emfResource.contents.filter(NablagenApplication).head
 		nPath += ngenApp.mainModule.type.findPath(wsLocation)
 		ngenApp.additionalModules.forEach[m|nPath += m.type.findPath(wsLocation)]
-		
+
 		val configs = ngenApp.targets.map[t|t.extensionConfigs].flatten
 		configs.forEach [ e |
 			nPath += e.extension.findPath(wsLocation)
@@ -76,12 +83,30 @@ class NablabRunner {
 			filter[s|!s.blank].map [ m |
 				ResourcesPlugin.workspace.root.getFile(new Path(m)).rawLocation.makeAbsolute.toString
 			]
-
+		
+		val moniLogResourceSet = new ResourceSetImpl
+		ResourcesPlugin.workspace.root.load(moniLogResourceSet)
+		
+		val crossReferencedFiles = moniLogResourceSet.resources
+		.map[r|r.allContents.toIterable].flatten
+		.filter[o|
+			o instanceof ContextVarReference || o instanceof CallEvent || o instanceof WriteEvent
+		].map[o|
+			if (o instanceof ContextVarReference) {
+				(o as ContextVarReference).target.eResource.URI.toPlatformString(true)
+			} else if (o instanceof CallEvent) {
+				(o as CallEvent).element.eResource.URI.toPlatformString(true)
+			} else {
+				(o as WriteEvent).element.eResource.URI.toPlatformString(true)
+			}
+		].toSet.map[s|ResourcesPlugin.workspace.root.getFile(new Path(s)).rawLocation.makeAbsolute.toString].toList
+		
 		val Map<String, String> optionsMap = newHashMap
 		if (!moniloggers.empty) {
 			val urls = MoniLogLibraryLocator.locate().stream.distinct
-			val moniloggerFiles = moniloggers.reduce[s1, s2|s1 + ', ' + s2] + ", " +
-				urls.reduce[s1, s2|s1 + ', ' + s2].get
+			val moniloggerFiles = moniloggers.reduce[s1, s2|s1 + ', ' + s2] + ', ' +
+				urls.reduce[s1, s2|s1 + ', ' + s2].get +
+				if (!crossReferencedFiles.empty) ', ' + crossReferencedFiles.reduce[s1, s2|s1 + ', ' + s2]
 			optionsMap.put("monilogger.files", moniloggerFiles)
 			if (pythonExecPath !== null && !pythonExecPath.blank) {
 				optionsMap.put("python.Executable", pythonExecPath)
@@ -111,13 +136,17 @@ class NablabRunner {
 					try {
 						parsedSource.execute
 						val executionTime = (System::nanoTime - startTime) * 0.000000001
-						consoleFactory.printConsole(MessageType.Exec, "Code interpretation ended in " + executionTime + "s")
-						consoleFactory.printConsole(MessageType.End, "Interpretation ended successfully for: " + ngenFile.name)
+						consoleFactory.printConsole(MessageType.Exec,
+							"Code interpretation ended in " + executionTime + "s")
+						consoleFactory.printConsole(MessageType.End,
+							"Interpretation ended successfully for: " + ngenFile.name)
 					} catch (PolyglotException e) {
 						if (e.cancelled) {
-							consoleFactory.printConsole(MessageType.Error, "Interpretation interrupted for " + ngenFile.name)
+							consoleFactory.printConsole(MessageType.Error,
+								"Interpretation interrupted for " + ngenFile.name)
 						} else {
-							consoleFactory.printConsole(MessageType.Error, "Interpretation failed for: " + ngenFile.name)
+							consoleFactory.printConsole(MessageType.Error,
+								"Interpretation failed for: " + ngenFile.name)
 							consoleFactory.printConsole(MessageType.Error, e.message)
 							consoleFactory.printConsole(MessageType.Error, IrUtils.getStackTrace(e))
 						}
@@ -144,5 +173,23 @@ class NablabRunner {
 	private def String findPath(EObject element, String wsPath) {
 		val wsRelativePath = element.eResource.URI.toPlatformString(true)
 		return ResourcesPlugin.workspace.root.findMember(wsRelativePath).locationURI.rawPath
+	}
+
+	private def void load(IContainer container, ResourceSet resourceSet) {
+		container.members.forEach [ member |
+			switch (member.getType()) {
+				case IResource.FILE: {
+					try {
+						if (member.fileExtension.equals("mnlg") || member.fileExtension.equals("instritf")) {
+							resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
+						}
+					} catch (Exception e) {
+					}
+				}
+				default: {
+					load(member as IContainer, resourceSet);
+				}
+			}
+		]
 	}
 }

@@ -67,7 +67,46 @@
 				icon="icons/Nablagen.gif">
 		</launchConfigurationTypeImage>
 	</extension>
- <extension
+	
+	<extension
+		id="fr.cea.nabla.ui.graalvm.commands"
+		name="fr.cea.nabla.ui.graalvm.commands"
+		point="org.eclipse.ui.commands">
+		<command 
+			defaultHandler="fr.cea.nabla.ui.NablaExecutableExtensionFactory:fr.cea.nabla.ui.graalvm.handlers.GenerateInstrumentationInterfaceHandler"
+			id="fr.cea.nabla.GenerateInstrumentationInterfaceCommand"
+			name="Generate Instrumentation Interface">
+		</command>
+	</extension>
+	
+	<extension
+		id="fr.cea.nabla.ui.menus"
+		name="fr.cea.nabla.ui.menus"
+		point="org.eclipse.ui.menus">
+		<menuContribution
+			allPopups="false"
+			locationURI="popup:org.eclipse.ui.popup.any?endof=additions">
+			<command
+				commandId="fr.cea.nabla.GenerateInstrumentationInterfaceCommand"
+				icon="icons/Nablagen.gif"
+				label="Generate Instrumentation Interface"
+				style="push">
+				<visibleWhen checkEnabled="false">
+					<with variable="activeMenuSelection">
+						<count value="1"/>
+						<iterate>
+							<adapt type="org.eclipse.core.resources.IResource">
+								<test property="org.eclipse.core.resources.extension" value="ngen"/>
+							</adapt>
+						</iterate>
+					</with>
+				</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+	
+	<!-- NabLab Console appender for MoniLog -->
+	<extension
        point="org.gemoc.monilog.appender">
     <appender
           class="fr.cea.nabla.ui.graalvm.NablabGraalVMExecutableExtensionFactory:fr.cea.nabla.monilog.nablalib.NabLabConsoleAppender"
@@ -75,5 +114,4 @@
     </appender>
  </extension>
 	
-	<!-- NabLab Console appender for MoniLog -->
 </plugin>
