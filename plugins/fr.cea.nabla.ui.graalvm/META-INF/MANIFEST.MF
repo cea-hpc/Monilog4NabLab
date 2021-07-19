@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: GraalVM Integration
 Bundle-SymbolicName: fr.cea.nabla.ui.graalvm;singleton:=true
-Bundle-Version: 0.4.0.qualifier
+Bundle-Version: 0.4.2.qualifier
 Bundle-Activator: fr.cea.nabla.ui.graalvm.Activator
 Require-Bundle: fr.cea.nabla,
  fr.cea.nabla.edit,

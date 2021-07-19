@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>fr.cea.nabla</groupId>
 		<artifactId>fr.cea.nabla.truffle</artifactId>
-		<version>0.4.1-SNAPSHOT</version>
+		<version>0.4.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>fr.cea.nabla.interpreter</artifactId>
 
@@ -19,11 +19,23 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>Central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+		<repository>
+			<id>NabLab</id>
+			<url>https://maven.pkg.github.com/cea-hpc/NabLab</url>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.10</version>
 				<configuration>
 					<downloadSources>true</downloadSources>
 					<downloadJavadocs>true</downloadJavadocs>
@@ -32,6 +44,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
@@ -142,17 +155,17 @@
 		<dependency>
 			<groupId>fr.cea.nabla</groupId>
 			<artifactId>fr.cea.nabla</artifactId>
-			<version>0.4.1</version>
+			<version>0.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cea.nabla</groupId>
 			<artifactId>fr.cea.nabla.ir</artifactId>
-			<version>0.4.1</version>
+			<version>0.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cea.nabla</groupId>
 			<artifactId>fr.cea.nabla.javalib</artifactId>
-			<version>0.4.1</version>
+			<version>0.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jgrapht</groupId>

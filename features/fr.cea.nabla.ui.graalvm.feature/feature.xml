@@ -2,7 +2,7 @@
 <feature
       id="fr.cea.nabla.ui.graalvm.feature"
       label="GraalVM integration for NabLab"
-      version="0.4.0.qualifier"
+      version="0.4.2.qualifier"
       plugin="fr.cea.nabla.ui.graalvm.p2.main">
 
    <description>
@@ -11,7 +11,7 @@
 
    <includes
          id="org.gemoc.monilog.feature"
-         version="1.0.0.qualifier"/>
+         version="0.0.0"/>
 
    <requires>
       <import plugin="org.eclipse.core.runtime"/>

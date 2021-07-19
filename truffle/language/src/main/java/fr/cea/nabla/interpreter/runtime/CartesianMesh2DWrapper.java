@@ -4,7 +4,6 @@ import org.eclipse.xtext.util.Strings;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
@@ -14,7 +13,6 @@ import fr.cea.nabla.ir.ir.Iterator;
 //import fr.cea.nabla.javalib.mesh.CartesianMesh2D;
 //import fr.cea.nabla.javalib.mesh.Quad;
 import fr.cea.nabla.javalib.mesh.CartesianMesh2D;
-import fr.cea.nabla.javalib.mesh.CartesianMesh2DFactory;
 
 public class CartesianMesh2DWrapper {
 
@@ -29,9 +27,8 @@ public class CartesianMesh2DWrapper {
 	public void initialize(JsonObject jsonMesh) {
 		assert (jsonMesh != null);
 		CompilerDirectives.transferToInterpreterAndInvalidate();
-		Gson gson = new Gson();
-		final CartesianMesh2DFactory f = gson.fromJson(jsonMesh, CartesianMesh2DFactory.class);
-		final CartesianMesh2D mesh = f.create();
+		final CartesianMesh2D mesh = new CartesianMesh2D();
+		mesh.jsonInit(jsonMesh.toString());
 		this.meshWrapper = Context.getCurrent().asValue(mesh);
 	}
 
