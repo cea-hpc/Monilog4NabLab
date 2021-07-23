@@ -53,9 +53,11 @@ public class StandaloneCompilationChainHelper implements ICompilationChainHelper
 	@Override
 	public IrRoot getIrRoot(Source source, final List<URI> nablaPaths) {
 		final URI genModelURI = URI.createFileURI(source.getPath());
-		final String mathPath = "/math.n";
-		final String linearAlgebraPath = "/linearalgebra.n";
-		final String linearAlgebraProviderPath = "/linearalgebra.ngen";
+		final String mathPath = "/Math.n";
+		final String linearAlgebraPath = "/LinearAlgebra.n";
+		final String linearAlgebraProviderPath = "/LinearAlgebra.ngen";
+		final String cartesianMesh2DPath = "/CartesianMesh2D.n";
+		final String cartesianMesh2DProviderPath = "/CartesianMesh2D.ngen";
 		
 		try {
 			final ResourceSet rs = resourceSetProvider.get();
@@ -65,14 +67,20 @@ public class StandaloneCompilationChainHelper implements ICompilationChainHelper
 			final URL mathURL = getClass().getResource(mathPath);
 			final URL linearURL = getClass().getResource(linearAlgebraPath);
 			final URL linearProviderURL = getClass().getResource(linearAlgebraProviderPath);
+			final URL meshURL = getClass().getResource(cartesianMesh2DPath);
+			final URL meshProviderURL = getClass().getResource(cartesianMesh2DProviderPath);
 
 			final URI mathURI = URI.createURI(mathURL.toString());
 			final URI linearURI = URI.createURI(linearURL.toString());
 			final URI linearProviderURI = URI.createURI(linearProviderURL.toString());
+			final URI meshURI = URI.createURI(meshURL.toString());
+			final URI meshProviderURI = URI.createURI(meshProviderURL.toString());
 			
 			nablaPaths.add(mathURI);
 			nablaPaths.add(linearURI);
 			nablaPaths.add(linearProviderURI);
+			nablaPaths.add(meshURI);
+			nablaPaths.add(meshProviderURI);
 			
 			nablaPaths.forEach(p -> {
 				rs.getResource(p, true);

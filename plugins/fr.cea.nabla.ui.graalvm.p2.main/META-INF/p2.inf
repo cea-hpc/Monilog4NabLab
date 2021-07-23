@@ -5,7 +5,7 @@ instructions.install = \
     chmod(targetDir:${artifact.location},targetFile:install.sh,permissions:755);\
 
 instructions.install.import= \
-    org.eclipse.equinox.p2.touchpoint.natives.chmod
+    org.eclipse.equinox.p2.touchpoint.eclipse.chmod
 
 instructions.configure = \
     fr.cea.nabla.ui.graalvm.p2.actions.execute(installFolder:${installFolder},artifact:${artifact.location},program:install.sh);\

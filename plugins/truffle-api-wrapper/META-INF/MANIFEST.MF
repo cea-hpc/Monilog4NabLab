@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: truffle-api-wrapper
 Bundle-SymbolicName: truffle-api-wrapper
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 21.1.0.qualifier
 Automatic-Module-Name: truffle-api-wrapper
 Bundle-ClassPath: mvn/graal-sdk-21.1.0.jar,
  mvn/truffle-api-21.1.0.jar

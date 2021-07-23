@@ -9,6 +9,8 @@ import org.osgi.framework.Bundle;
 
 import com.google.inject.Injector;
 
+import fr.cea.nabla.ui.internal.NablaActivator;
+
 public class NablabGraalVMExecutableExtensionFactory extends AbstractGuiceAwareExecutableExtensionFactory {
 
 	@Override
@@ -18,8 +20,8 @@ public class NablabGraalVMExecutableExtensionFactory extends AbstractGuiceAwareE
 	
 	@Override
 	protected Injector getInjector() {
-		Activator activator = Activator.getDefault();
-		return activator != null ? activator.getInjector() : null;
+		NablaActivator activator = NablaActivator.getInstance();
+		return activator != null ? activator.getInjector(NablaActivator.FR_CEA_NABLA_NABLA) : null;
 	}
 
 }

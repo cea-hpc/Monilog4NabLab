@@ -10,8 +10,8 @@ import fr.cea.nabla.ir.ir.Function
 import fr.cea.nabla.ir.ir.IrRoot
 import fr.cea.nabla.ir.ir.Job
 import fr.cea.nabla.nablagen.NablagenApplication
-import instrumentationInterface.InstrumentationInterface
-import instrumentationInterface.InstrumentationInterfaceFactory
+import org.gemoc.instrumentationInterface.InstrumentationInterface
+import org.gemoc.instrumentationInterface.InstrumentationInterfaceFactory
 import java.util.HashSet
 
 class NablabInstrumentationInterfaceGenerator extends StandaloneGeneratorBase {
@@ -50,16 +50,16 @@ class NablabInstrumentationInterfaceGenerator extends StandaloneGeneratorBase {
 
 	def InstrumentationInterface getInstrumentationInterfaceContent(IrRoot ir) {
 
-		val resource = ir.eResource
-
 		factory.createInstrumentationInterface => [
-			instrumentableElements += resource.allContents.filter[o|o instanceof Job].map[o|o as Job].map [ j |
+			name = ir.name
+			
+			instrumentableElements += ir.eAllContents.filter[o|o instanceof Job].map[o|o as Job].map [ j |
 				factory.createCallableElement => [
 					name = j.name
 				]
 			].toList
 
-			instrumentableElements += resource.allContents.filter[o|o instanceof Function].map[o|o as Function].map [ f |
+			instrumentableElements += ir.eAllContents.filter[o|o instanceof Function].map[o|o as Function].map [ f |
 				factory.createCallableElement => [
 					name = f.name
 				]
@@ -68,7 +68,7 @@ class NablabInstrumentationInterfaceGenerator extends StandaloneGeneratorBase {
 			val writableNames = new HashSet<String>
 
 			instrumentableElements +=
-				resource.allContents.filter[o|o instanceof Affectation].map[o|o as Affectation].map[a|a.left.target].
+				ir.eAllContents.filter[o|o instanceof Affectation].map[o|o as Affectation].map[a|a.left.target].
 					toSet.map [ v |
 						writableNames.add(v.name)
 						factory.createWriteableElement => [
@@ -76,7 +76,7 @@ class NablabInstrumentationInterfaceGenerator extends StandaloneGeneratorBase {
 						]
 					].toList
 
-			readableElements += resource.allContents.filter[o|o instanceof ArgOrVar].map[o|o as ArgOrVar].filter [ v |
+			readableElements += ir.eAllContents.filter[o|o instanceof ArgOrVar].map[o|o as ArgOrVar].filter [ v |
 				!writableNames.contains(v.name)
 			].map [ v |
 				factory.createReadableElement => [

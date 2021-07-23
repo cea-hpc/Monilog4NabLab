@@ -1,19 +1,20 @@
 package fr.cea.nabla.monilog.nablalib;
 
+import org.gemoc.monilog.api.IMoniLogAppender;
+
 import com.google.inject.Inject;
 
 import fr.cea.nabla.generator.NablaGeneratorMessageDispatcher.MessageType;
 import fr.cea.nabla.ui.console.NabLabConsoleFactory;
-import fr.cea.nabla.ui.graalvm.Activator;
-
-import org.gemoc.monilog.api.IMoniLogAppender;
+import fr.cea.nabla.ui.internal.NablaActivator;
 
 public class NabLabConsoleAppender implements IMoniLogAppender {
 
 	@Inject NabLabConsoleFactory consoleFactory;
 
 	public NabLabConsoleAppender() {
-		Activator.getDefault().getInjector().injectMembers(this);
+		NablaActivator activator = NablaActivator.getInstance();
+		activator.getInjector(NablaActivator.FR_CEA_NABLA_NABLA).injectMembers(this);
 	}
 	
 	@Override

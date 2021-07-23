@@ -73,7 +73,7 @@
 		name="fr.cea.nabla.ui.graalvm.commands"
 		point="org.eclipse.ui.commands">
 		<command 
-			defaultHandler="fr.cea.nabla.ui.NablaExecutableExtensionFactory:fr.cea.nabla.ui.graalvm.handlers.GenerateInstrumentationInterfaceHandler"
+			defaultHandler="fr.cea.nabla.ui.graalvm.NablabGraalVMExecutableExtensionFactory:fr.cea.nabla.ui.graalvm.handlers.GenerateInstrumentationInterfaceHandler"
 			id="fr.cea.nabla.GenerateInstrumentationInterfaceCommand"
 			name="Generate Instrumentation Interface">
 		</command>

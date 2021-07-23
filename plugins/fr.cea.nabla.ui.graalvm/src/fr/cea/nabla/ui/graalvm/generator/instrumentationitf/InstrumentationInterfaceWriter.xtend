@@ -1,11 +1,11 @@
 package fr.cea.nabla.ui.graalvm.generator.instrumentationitf
 
-import instrumentationInterface.InstrumentationInterface
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.xmi.XMLResource
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.resource.SaveOptions
+import org.gemoc.instrumentationInterface.InstrumentationInterface;
 
 class InstrumentationInterfaceWriter {
 	public static val InstrumentationInterfaceExtension = 'instritf'

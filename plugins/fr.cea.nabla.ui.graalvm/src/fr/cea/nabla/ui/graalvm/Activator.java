@@ -11,8 +11,6 @@ import com.google.inject.Injector;
  */
 public class Activator extends AbstractUIPlugin {
 
-	// fr.cea.nabla.ui.graalvm.NablabGraalVMExecutableExtensionFactory:
-	
 	// The plug-in ID
 	public static final String PLUGIN_ID = "fr.cea.nabla.ui.graalvm"; //$NON-NLS-1$
 
