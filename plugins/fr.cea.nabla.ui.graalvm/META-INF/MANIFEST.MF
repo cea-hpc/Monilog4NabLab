@@ -39,8 +39,8 @@ Require-Bundle: fr.cea.nabla,
  org.eclipse.zest.core,
  org.eclipse.zest.layouts,
  org.eclipse.core.expressions,
- org.gemoc.monilog;bundle-version="1.0.0",
- org.gemoc.instrument.interface;bundle-version="1.0.0"
+ org.gemoc.monilog;bundle-version="2.1.0",
+ org.gemoc.instrument.interface;bundle-version="2.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: fr.cea.nabla.ui.graalvm
 Bundle-ActivationPolicy: lazy
