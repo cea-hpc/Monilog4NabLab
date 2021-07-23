@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
-<!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl -->
-<target name="NabLab Monilog Target platform" sequenceNumber="1625662819">
+<!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl --><target name="NabLab Monilog Target platform" sequenceNumber="1625662819">
   <locations>
-    <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
       <unit id="org.eclipse.sdk.feature.group" version="4.19.0.v20210303-1800"/>
       <unit id="org.eclipse.rcp.feature.group" version="4.19.0.v20210303-1800"/>
       <unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.11.1100.v20210227-0235"/>
@@ -31,7 +30,7 @@
       <unit id="com.google.gson" version="2.8.6.v20201231-1626"/>
       <repository id="eclipse" location="https://download.eclipse.org/releases/2021-03"/>
     </location>
-    <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
       <unit id="org.eclipse.sirius.aql.feature.group" version="6.4.2.202103091337"/>
       <unit id="org.eclipse.sirius.runtime.feature.group" version="6.4.2.202103091337"/>
       <unit id="org.eclipse.sirius.runtime.aql.feature.group" version="6.4.2.202103091337"/>
@@ -45,22 +44,22 @@
       <unit id="org.eclipse.sirius.diagram.elk.feature.feature.group" version="6.4.2.202103091337"/>
       <repository id="sirius" location="https://download.eclipse.org/sirius/updates/releases/6.4.2/2020-06"/>
     </location>
-    <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
       <unit id="org.eclipse.gmf.runtime.notation.feature.group" version="1.13.0.202004160913"/>
       <repository id="gmf-runtime-notation" location="http://download.eclipse.org/modeling/gmp/gmf-notation/updates/releases/"/>
     </location>
-    <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
       <unit id="org.eclipse.gmf.runtime.sdk.feature.group" version="1.13.1.202106221344"/>
       <repository id="gmf-runtime-diagram" location="https://download.eclipse.org/modeling/gmp/gmf-runtime/updates/releases/"/>
     </location>
-    <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
       <unit id="fr.cea.nabla.feature.feature.group" version="0.4.2.202107011253"/>
       <repository location="https://cea-hpc.github.io/NabLab/update-site/0.4.2"/>
     </location>
-    <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
-      <unit id="org.gemoc.monilog.feature.feature.group" version="1.0.0.202107071226"/>
-      <repository location="http://gemoc.org/monilog/1.0.0"/>
-    </location>
+	  <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+		  <repository location="http://gemoc.org/monilog/2.1.0"/>
+		  <unit id="org.gemoc.monilog.feature.feature.group" version="2.1.0.202107231522"/>
+	  </location>
   </locations>
   <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
 </target>
