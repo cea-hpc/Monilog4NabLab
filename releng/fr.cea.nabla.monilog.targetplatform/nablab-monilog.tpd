@@ -44,6 +44,6 @@ location "https://cea-hpc.github.io/NabLab/update-site/0.4.2" {
 	fr.cea.nabla.feature.feature.group
 }
 
-location "http://gemoc.org/monilog/2.1.0" {
+location "http://gemoc.org/monilog/2.1.1" {
 	org.gemoc.monilog.feature.feature.group
 }

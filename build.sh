@@ -12,6 +12,6 @@ echo "Moving nabla-component to /plugins/fr.cea.nabla.ui.graalvm.p2.main"
 cd $start/plugins/fr.cea.nabla.ui.graalvm.p2.main
 cp $start/truffle/component/nabla-component.jar .
 echo "Downloading monilogger.jar to /plugins/fr.cea.nabla.ui.graalvm.p2.main"
-curl -H "Accept: application/zip" -L https://github.com/gemoc/monilog/releases/download/v2.1.0/monilogger.jar -o monilogger.jar
+curl -H "Accept: application/zip" -L https://github.com/gemoc/monilog/releases/download/v2.1.1/monilogger.jar -o monilogger.jar
 echo "Done."
 
